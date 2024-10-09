@@ -22,6 +22,10 @@ This README file serves as an outline of today's topics and contains all require
   
 The martial contains texts and examples from the textbook Fahrmeir et al. (2013) and also parts and didactic concepts are borrowed from the corresponding lecture `GLM` by Prof. Thomas Kneib, Chair of Statistics. Also parts of the lectures `Statistical Data Analysis with R` and `Advanced Statistical Programming` are included.
 
+We are using the following libraries:
+
+
+
 Modelling survival probabilities, also known as survival analysis, is one of the most important applications for which logistic regression is used and which we will use as an example today. Another famous field of application is the questionnaire analysis, which will be sketched in the PdD examples at the end. The special property of survival data is that the response variable can only have binary (or more generally categorical) outcomes. This property is the reason, why the values of the response that are to be estimated have different outcomes than the observations of the response variable. In logistic regression, not the outcome of an observation (e.g. dead or alive) is estmimated, but the probability that an observation shows an outcome. Logistic regression is a possibility to fit a survival probability curve over a continuous variable of interest, e.g. the tree age. Logistic regression is therefore an alternative to the well-known Weibull survival curves. The logit curve resulting from the regression has similar properties as the cumulative Weibull distribution. Also the interpretation is comparable.
 
 # Data: `Forest Health`
@@ -35,6 +39,8 @@ is dead. See p. 9 of Fahrmeir et al. (2013) for more details.
 
 ```{r}
 load("Data/ForestHealth.rda")
+library(ggplot2)
+library(tidyverse)
 ```
 
 

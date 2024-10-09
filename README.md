@@ -3,7 +3,7 @@ Research Seminar - Logistic Regression
 Johannes, Kai
 
 - [1 Preamble](#1-preamble)
-- [2 Data: Forest Health](#2-data-forest-health)
+- [2 Data: `Forest Health`](#2-data-forest-health)
 - [3 Literature and Material](#3-literature-and-material)
 
 # 1 Preamble
@@ -25,6 +25,8 @@ corresponding lecture `GLM` by Prof. Thomas Kneib, Chair of Statistics.
 Also parts of the lectures `Statistical Data Analysis with R` and
 `Advanced Statistical Programming` are included.
 
+We are using the following libraries:
+
 Modelling survival probabilities, also known as survival analysis, is
 one of the most important applications for which logistic regression is
 used and which we will use as an example today. Another famous field of
@@ -42,7 +44,7 @@ therefore an alternative to the well-known Weibull survival curves. The
 logit curve resulting from the regression has similar properties as the
 cumulative Weibull distribution. Also the interpretation is comparable.
 
-# 2 Data: Forest Health
+# 2 Data: `Forest Health`
 
 Consider the example data set `forest health` from Fahrmeir et
 al. (2013). The data set consists of 16 variables with 1796 observations
@@ -57,17 +59,26 @@ Göttlein (Technical University, Munich) since 1982. Five tree species
 are part of this survey: beech, oak, spruce, larch, and pine. Here we
 will restrict ourselves to beech trees. Every year, the condition of
 beech trees is categorized by the response variable “defoliation”
-(defol) into nine ordinal categories 0 %, 12.5 %, 25 %, 37.5 %, 50 %,
+(`defol`) into nine ordinal categories 0 %, 12.5 %, 25 %, 37.5 %, 50 %,
 62.5 %, 75 %, 87.5 %, and 100 %. Whereas the category 0 % signifies that
 the beech tree is healthy, the category 100 % implies that the tree is
 dead. See p. 9 of Fahrmeir et al. (2013) for more details.
 
 ``` r
-# install.packages("R2BayesX") # We do only use the data forestHealth contained in this package.
-data("forestHealth")
+load("Data/ForestHealth.rda")
+library(ggplot2)
+library(tidyverse)
 ```
 
-    ## Warning in data("forestHealth"): Datensatz 'forestHealth' nicht gefunden
+    ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+    ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
+    ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
+    ## ✔ lubridate 1.9.3     ✔ tibble    3.2.1
+    ## ✔ purrr     1.0.2     ✔ tidyr     1.3.1
+    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ✖ dplyr::filter() masks stats::filter()
+    ## ✖ dplyr::lag()    masks stats::lag()
+    ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 
 # 3 Literature and Material
 
