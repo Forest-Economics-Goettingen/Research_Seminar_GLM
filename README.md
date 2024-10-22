@@ -28,18 +28,18 @@ This README file serves as an outline of today’s topics and contains all
 required materials or links to the materials. This file and all
 materials can be found on github. Today’s aim is
 
-- to explain the nature of the data for which a logistic regression can
-  be performed,
-- to explain the special properties of the logistic regression and
+- to explain the structure of the **data** for which a logistic
+  regression can be performed,
+- to explain the special properties of the **logistic regression** and
   thereby introduce the concept of generalized regression, and
-- to perform and interpret a logistic regression in `R`.
-- At the end, examples from current research projects are shown and
+- to **perform and interpret** a logistic regression in `R`.
+- At the end, examples from **current research projects** are shown and
   discussed.
 
 The martial contains texts and examples from the textbook Fahrmeir et
-al. (2013) and also parts and didactic concepts are borrowed from the
-corresponding lecture `GLM` by Prof. Thomas Kneib, Chair of Statistics.
-Also parts of the lectures `Statistical Data Analysis with R` and
+al. (2013) as well as parts and ideas from the corresponding lecture
+`GLM` by Prof. Thomas Kneib, Chair of Statistics. Furthermore, parts of
+the lectures `Statistical Data Analysis with R` and
 `Advanced Statistical Programming` of the forest faculty are included.
 
 We are using the following libraries:
@@ -48,7 +48,7 @@ We are using the following libraries:
 library(tidyverse)  # Data science
 library(ggplot2)    # Visualization
 
-# GLMs are part of the stats package, which is loaded at start up
+# GLM itself is part of the stats package, which is loaded at start up
 library(ggeffects)  # Visual interpretation of statistical models
 library(emmeans)    # Testing linear hypotheses
 ```
