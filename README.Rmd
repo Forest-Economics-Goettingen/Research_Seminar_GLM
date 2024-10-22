@@ -33,14 +33,15 @@ library(ggeffects)  # Visual interpretation of statistical models
 library(emmeans)    # Testing linear hypotheses
 ```
 
-We kindly ask you to prepare all tasks that are not tagged as 'in class' for the research seminar.
+We ask you to prepare some tasks beforehand to save some time in the seminar. Those are tagged as 'Beforehand task'.
 
-__Task 0:__ Getting ready
+__Beforehand task 0:__ Getting ready
 
 - Connect to the repository and clone it to your laptop
+- Get R and R Studio running
 - Install the required libraries
 
-Modelling survival probabilities, also known as survival analysis, is one of the most important applications for which logistic regression is used and which we will use as an example today. Another famous field of application is the questionnaire analysis, which will be sketched in the PdD examples at the end. The special property of survival data is that the response variable can only have binary (or more generally categorical) outcomes. This property is the reason, why the values of the response that are to be estimated have different outcomes than the observations of the response variable. In logistic regression, not the outcome of an observation (e.g. dead or alive) is estmimated, but the probability that an observation shows an outcome. Logistic regression is a possibility to fit a survival probability curve over a continuous variable of interest, e.g. the tree age. Logistic regression is therefore an alternative to the well-known Weibull survival curves. The logit curve resulting from the regression has similar properties as the cumulative Weibull distribution. Also the interpretation is comparable.
+Modelling survival probabilities, also known as survival analysis, is one of the most important and most suitable applications for which logistic regression is used and which we will also use as an example today. Another famous field of application is the questionnaire analysis, which will be sketched in the PdD examples at the end. The special property of survival data is that the response variable can only have binary (or more generally categorical) outcomes. Individuals will survive until one specific time point. Idea of survival modelling is to estimate this time point and possibly additionally inference the reasons survival (or non-survival respectively). This 0/1 property is the reason, why the values of the response that are to be estimated have different outcomes than the observations of the response variable. In logistic regression, not the outcome of an observation (e.g. dead or alive) is estimated, but the probability that an observation shows an outcome (e.g. suvival). Logistic regression is a possibility to fit a survival probability curve over a continuous variable of interest, e.g. the tree age. Logistic regression is thus an alternative to the well-known Weibull survival curves. The logit curve resulting from the regression has similar properties as the cumulative Weibull distribution. Also the interpretation is comparable.
 
 # Data: `ForestHealth`
 
@@ -52,7 +53,7 @@ load("Data/ForestHealth.rda")
 ForestHealth %>% ggplot(aes(y = defoliation, x = age, col = stand)) + geom_point()
 ```
 
-__Task 1:__ Getting familiar with the data and understand the nature of binary responses
+__Beforehand Task 1:__ Getting familiar with the data and understand the nature of binary responses
 
 - Load `ForestHealth`
 - Calculate a binary response variable that contains healthy (defoliation \[0 \% - 12.5\)) and unhealthy (\[12.5 \% - 75 \%\)) trees
@@ -62,22 +63,41 @@ __Task 1:__ Getting familiar with the data and understand the nature of binary r
 - Add one another variable that seems to influence the tree health
   -   Are these two models suitable to estimate the health status? Give some pro and contra arguments and underpin your arguments using common numbers or diagrams of (linear) statistical inference.
 
-# Orinary linear model vs. Logit model
+```{r}
+ForestHealth <- ForestHealth %>% mutate(diseased = ifelse(defoliation %in% "[0, 12.5)", 0, 1))
+ForestHealth %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
+  geom_smooth(method = "lm")
+```
+
+
+# Orinary linear model vs. GLM
 
 Why is the ordinary linear models usually not suited to model binary responses (and under which conditions could a linear model might be sufficient)?
 
-__Task 2:__ Getting the link between linear models and general linear models
+__Beforehand Task 2:__ Getting the link between linear models and general linear models
 
 - Read Lane (2002) and prepare for the following discussion
     - Why do generalized linear model belong to the family of linear model even though their curvature is not linear?
-    - Which properties distinguish a generalized linear model from a *linear* model?
-    - Which properties distinguish a generalized linear model from a *non-linear* model?
-    
+    - Which properties distinguish a *generalized linear model* from a *linear* model? In particular: What is a link function?
+    - Which properties distinguish a *generalized linear model* from a *non-linear* model?
+
+
 # Logit regression
 
 ## Theory
 
+__Task 3:__ Modeling a disease probability model
+
+- Calculate Logits by hand
+- Create a GLM
+
+```{r}
+
+```
+
+
 ## Example
+
 
 
 # Model diagnostics
