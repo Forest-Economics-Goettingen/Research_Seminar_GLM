@@ -131,6 +131,58 @@ ForestHealth %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
 
 ![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
+``` r
+lm_simple <- ForestHealth %>% lm(diseased ~ age, data = .)
+summary(lm_simple)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = diseased ~ age, data = .)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -0.8864 -0.3389 -0.1009  0.4270  0.9547 
+    ## 
+    ## Coefficients:
+    ##               Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept) -0.0419314  0.0238913  -1.755   0.0794 .  
+    ## age          0.0039671  0.0002026  19.584   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 0.4406 on 1791 degrees of freedom
+    ## Multiple R-squared:  0.1764, Adjusted R-squared:  0.1759 
+    ## F-statistic: 383.5 on 1 and 1791 DF,  p-value: < 2.2e-16
+
+``` r
+lm_multiple <- ForestHealth %>% select(age, elevation, soil, ph, fertilized, diseased) %>%  lm(diseased ~ ., data = .)
+summary(lm_multiple)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = diseased ~ ., data = .)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -0.7686 -0.3696 -0.1069  0.3722  0.9440 
+    ## 
+    ## Coefficients:
+    ##                Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   0.3013240  0.1641404   1.836   0.0666 .  
+    ## age           0.0041132  0.0002102  19.564  < 2e-16 ***
+    ## elevation    -0.0001429  0.0001750  -0.817   0.4140    
+    ## soil         -0.0049648  0.0010715  -4.633 3.86e-06 ***
+    ## ph           -0.0588980  0.0313381  -1.879   0.0603 .  
+    ## fertilizedno  0.1162940  0.0136518   8.519  < 2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 0.4293 on 1787 degrees of freedom
+    ## Multiple R-squared:  0.2198, Adjusted R-squared:  0.2176 
+    ## F-statistic: 100.7 on 5 and 1787 DF,  p-value: < 2.2e-16
+
 # 3 Orinary LM vs. GLM
 
 Motivating example for GLMs: Why is the ordinary linear models usually
@@ -209,14 +261,74 @@ in der Logik von dem Lane Paper zu beleiben?
 
 **Task 3:** Modeling a disease probability model
 
-- Calculate Logits by hand
+- Calculate Logits by hand ???
 - Create a univariate GLM over tree age
 - Create a multiple GLM over age and self-chosen promising covariates,
   save separate to the simple GLM
 
 ``` r
-# Solution
+ForestHealth %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = binomial(link = "logit")))
 ```
+
+    ## `geom_smooth()` using formula = 'y ~ x'
+
+![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+``` r
+glm_simple <- ForestHealth %>% glm(diseased ~ age, data = ., family = binomial(link = "logit"))
+summary(glm_simple)
+```
+
+    ## 
+    ## Call:
+    ## glm(formula = diseased ~ age, family = binomial(link = "logit"), 
+    ##     data = .)
+    ## 
+    ## Coefficients:
+    ##              Estimate Std. Error z value Pr(>|z|)    
+    ## (Intercept) -2.731691   0.152961  -17.86   <2e-16 ***
+    ## age          0.019913   0.001211   16.45   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for binomial family taken to be 1)
+    ## 
+    ##     Null deviance: 2380.0  on 1792  degrees of freedom
+    ## Residual deviance: 2036.8  on 1791  degrees of freedom
+    ## AIC: 2040.8
+    ## 
+    ## Number of Fisher Scoring iterations: 4
+
+``` r
+glm_multiple <- ForestHealth %>% select(age, elevation, soil, ph, fertilized, diseased) %>% 
+  glm(diseased ~ ., data = .,  family = binomial(link = "logit"))
+summary(glm_multiple)
+```
+
+    ## 
+    ## Call:
+    ## glm(formula = diseased ~ ., family = binomial(link = "logit"), 
+    ##     data = .)
+    ## 
+    ## Coefficients:
+    ##                Estimate Std. Error z value Pr(>|z|)    
+    ## (Intercept)  -0.7237538  0.8938894  -0.810   0.4181    
+    ## age           0.0219453  0.0013379  16.402  < 2e-16 ***
+    ## elevation    -0.0006358  0.0009621  -0.661   0.5087    
+    ## soil         -0.0265924  0.0061515  -4.323 1.54e-05 ***
+    ## ph           -0.4102028  0.1778600  -2.306   0.0211 *  
+    ## fertilizedno  0.6249360  0.0787429   7.936 2.08e-15 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for binomial family taken to be 1)
+    ## 
+    ##     Null deviance: 2380.0  on 1792  degrees of freedom
+    ## Residual deviance: 1936.8  on 1787  degrees of freedom
+    ## AIC: 1948.8
+    ## 
+    ## Number of Fisher Scoring iterations: 4
 
 # 6 Model diagnostics
 

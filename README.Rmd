@@ -67,6 +67,10 @@ __Beforehand Task 1:__ Getting familiar with the data and understand the nature 
 ForestHealth <- ForestHealth %>% mutate(diseased = ifelse(defoliation %in% "[0, 12.5)", 0, 1))
 ForestHealth %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
   geom_smooth(method = "lm")
+lm_simple <- ForestHealth %>% lm(diseased ~ age, data = .)
+summary(lm_simple)
+lm_multiple <- ForestHealth %>% select(age, elevation, soil, ph, fertilized, diseased) %>%  lm(diseased ~ ., data = .)
+summary(lm_multiple)
 ```
 
 
@@ -124,12 +128,19 @@ The response function follows a Bernoulli distribution. However, grouping observ
 
 __Task 3:__ Modeling a disease probability model 
 
-- Calculate Logits by hand
+- Calculate Logits by hand ???
 - Create a univariate GLM over tree age
 - Create a multiple GLM over age and self-chosen promising covariates, save separate to the simple GLM
 
 ```{r}
-# Solution
+ForestHealth %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = binomial(link = "logit")))
+
+glm_simple <- ForestHealth %>% glm(diseased ~ age, data = ., family = binomial(link = "logit"))
+summary(glm_simple)
+glm_multiple <- ForestHealth %>% select(age, elevation, soil, ph, fertilized, diseased) %>% 
+  glm(diseased ~ ., data = .,  family = binomial(link = "logit"))
+summary(glm_multiple)
 ```
 
 # Model diagnostics
