@@ -71,6 +71,7 @@ lm_simple <- ForestHealth %>% lm(diseased ~ age, data = .)
 summary(lm_simple)
 lm_multiple <- ForestHealth %>% select(age, elevation, soil, ph, fertilized, diseased) %>%  lm(diseased ~ ., data = .)
 summary(lm_multiple)
+ggeffects::ggeffect(lm_multiple, terms = "age") %>% plot()
 ```
 
 
@@ -90,7 +91,7 @@ __Beforehand Task 2:__ What is the differnce between linear models and general l
 
 @Johannes, ich habe schon Mal was zu GLM vorbereitet, siehe misc. Das ist aber zu viel. Mich würde deine Meinung interessieren, ob es sich lohnt davon wsa zu recyclen?
 
-# Logistic regression
+## Logistic regression
 
 Instead of modelling $y_i$ directly, we define a regression model that estimates the possibility of a discrete status 1 (e.g. dead)
 
@@ -122,7 +123,7 @@ $$
 g(\pi)=\text{log} \left( \frac{\pi}{1 - \pi}\ \right).
 $$
 
-The response function follows a Bernoulli distribution. However, grouping observation with same outcomes makes the solving process more efficient and then leads to a Binomial distribution (Fahrmeir et al., 2023, p. 270 - 277), which is why in practiced programming, the Binomial or Quasibinomial distributions are usually taken.
+The response function follows a Bernoulli distribution. However, grouping observation with same outcomes makes the solving process more efficient and then leads to a Binomial distribution (Fahrmeir et al., 2023, p. 270 - 277), which is why in practiced programming, the Binomial or Quasibinomial distributions are usually taken. You should stick to these standard combination of distributions of link functions, however, you can freely decide for any of the distributions of the so called exponential family if want.
 
 @Johannes, würdest du Logits per Hand rechnen lassen und dann in lm? Um in der Logik von dem Lane Paper zu beleiben?
 
@@ -141,22 +142,32 @@ summary(glm_simple)
 glm_multiple <- ForestHealth %>% select(age, elevation, soil, ph, fertilized, diseased) %>% 
   glm(diseased ~ ., data = .,  family = binomial(link = "logit"))
 summary(glm_multiple)
+ggeffects::ggeffect(glm_multiple, terms = c("age")) %>% plot()
+ggeffects::ggeffect(glm_multiple, terms = c("elevation")) %>% plot()
+ggeffects::ggeffect(glm_multiple, terms = c("soil")) %>% plot()
 ```
 
-# Model diagnostics
+## Model diagnostics
 
 Von uns vorgestelltes Summary gemeinsam erklären
 Kreuzvalidierung?
+Overdispersion (quasibinomial, use more covariates)
 
-
-# Model interpretaion
+## Model interpretaion
 
 Von uns vorgestelltes Summary gemeinsam erklären
 Odds multiplicative -> hard to interprete
 
-## Example
 
-## Outlook: Multinomial regression
+# Outlook: Multinomial regression
+
+Regression models that extend models for binary responses $y_i \in \{0, 1\}$ to the case of categorical responses $y_i=\{1, \dots, c+1\}$. In the example data `ForestHealth`, we have $y_i\in\{\text{no defoliation}, \text{weak defoliation}, \text{severe defoliation} \}$.
+
+## Unordered catagories
+
+In case of nominally scaled responses (no ordering), the logit model is extended with
+
+## Ordered categories
 
 Text und Code verfassen und nur vorstellen, keine Übungsaufgabe
 

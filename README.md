@@ -6,17 +6,17 @@ Johannes, Kai
 - [2 Data: `ForestHealth`](#2-data-foresthealth)
 - [3 Orinary LM vs. GLM](#3-orinary-lm-vs-glm)
 - [4 GLM](#4-glm)
-- [5 Logistic regression](#5-logistic-regression)
-- [6 Model diagnostics](#6-model-diagnostics)
-- [7 Model interpretaion](#7-model-interpretaion)
-  - [7.1 Example](#71-example)
-  - [7.2 Outlook: Multinomial
-    regression](#72-outlook-multinomial-regression)
-  - [7.3 PhD examples](#73-phd-examples)
-- [8 Literature and Material](#8-literature-and-material)
-  - [8.1 Primary literature](#81-primary-literature)
-  - [8.2 Online resources](#82-online-resources)
-  - [8.3 Books](#83-books)
+  - [4.1 Logistic regression](#41-logistic-regression)
+  - [4.2 Model diagnostics](#42-model-diagnostics)
+  - [4.3 Model interpretaion](#43-model-interpretaion)
+- [5 Outlook: Multinomial regression](#5-outlook-multinomial-regression)
+  - [5.1 Unordered catagories](#51-unordered-catagories)
+  - [5.2 Ordered categories](#52-ordered-categories)
+  - [5.3 PhD examples](#53-phd-examples)
+- [6 Literature and Material](#6-literature-and-material)
+  - [6.1 Primary literature](#61-primary-literature)
+  - [6.2 Online resources](#62-online-resources)
+  - [6.3 Books](#63-books)
 
 # 1 Preamble
 
@@ -183,6 +183,12 @@ summary(lm_multiple)
     ## Multiple R-squared:  0.2198, Adjusted R-squared:  0.2176 
     ## F-statistic: 100.7 on 5 and 1787 DF,  p-value: < 2.2e-16
 
+``` r
+ggeffects::ggeffect(lm_multiple, terms = "age") %>% plot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-3-2.png)<!-- -->
+
 # 3 Orinary LM vs. GLM
 
 Motivating example for GLMs: Why is the ordinary linear models usually
@@ -206,7 +212,7 @@ general linear models? What is the G in GLM?
 ist aber zu viel. Mich würde deine Meinung interessieren, ob es sich
 lohnt davon wsa zu recyclen?
 
-# 5 Logistic regression
+## 4.1 Logistic regression
 
 Instead of modelling $y_i$ directly, we define a regression model that
 estimates the possibility of a discrete status 1 (e.g. dead)
@@ -254,7 +260,10 @@ The response function follows a Bernoulli distribution. However,
 grouping observation with same outcomes makes the solving process more
 efficient and then leads to a Binomial distribution (Fahrmeir et al.,
 2023, p. 270 - 277), which is why in practiced programming, the Binomial
-or Quasibinomial distributions are usually taken.
+or Quasibinomial distributions are usually taken. You should stick to
+these standard combination of distributions of link functions, however,
+you can freely decide for any of the distributions of the so called
+exponential family if want.
 
 @Johannes, würdest du Logits per Hand rechnen lassen und dann in lm? Um
 in der Logik von dem Lane Paper zu beleiben?
@@ -330,30 +339,59 @@ summary(glm_multiple)
     ## 
     ## Number of Fisher Scoring iterations: 4
 
-# 6 Model diagnostics
+``` r
+ggeffects::ggeffect(glm_multiple, terms = c("age")) %>% plot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
+
+``` r
+ggeffects::ggeffect(glm_multiple, terms = c("elevation")) %>% plot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->
+
+``` r
+ggeffects::ggeffect(glm_multiple, terms = c("soil")) %>% plot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
+
+## 4.2 Model diagnostics
 
 Von uns vorgestelltes Summary gemeinsam erklären Kreuzvalidierung?
+Overdispersion (quasibinomial, use more covariates)
 
-# 7 Model interpretaion
+## 4.3 Model interpretaion
 
 Von uns vorgestelltes Summary gemeinsam erklären Odds multiplicative -\>
 hard to interprete
 
-## 7.1 Example
+# 5 Outlook: Multinomial regression
 
-## 7.2 Outlook: Multinomial regression
+Regression models that extend models for binary responses
+$y_i \in \{0, 1\}$ to the case of categorical responses
+$y_i=\{1, \dots, c+1\}$. In the example data `ForestHealth`, we have
+$y_i\in\{\text{no defoliation}, \text{weak defoliation}, \text{severe defoliation} \}$.
+
+## 5.1 Unordered catagories
+
+In case of nominally scaled responses (no ordering), the logit model is
+extended with
+
+## 5.2 Ordered categories
 
 Text und Code verfassen und nur vorstellen, keine Übungsaufgabe
 
     - Forest health multinomial
     - Forest health ordered
 
-## 7.3 PhD examples
+## 5.3 PhD examples
 
 - Henning
 - Valeska
 
-# 8 Literature and Material
+# 6 Literature and Material
 
 This file as well as all other materials are uploaded on GitHub. You
 should all have ssh access rights, such that you can use your version
@@ -362,19 +400,19 @@ control feature of RStudio to clone the GitHub repository:
 <https://github.com/Forest-Economics-Goettingen/Research_Seminar_GLM>
 <git@github.com>:Forest-Economics-Goettingen/Research_Seminar_GLM.git
 
-## 8.1 Primary literature
+## 6.1 Primary literature
 
 Lane (2002): Generalized linear models in soil science. European Journal
 of Soil Science, 53, 241-251.
 <https://doi.org/10.1046/j.1365-2389.2002.00440.x>
 
-## 8.2 Online resources
+## 6.2 Online resources
 
 Johannes Signer, Kai Husmann (2024): Kursmaterial: Einführung in die
 Datenanalyse mit R.
 <https://github.com/Forest-Economics-Goettingen/KursskriptRBsc>
 
-## 8.3 Books
+## 6.3 Books
 
 Ludwig Fahrmeir, Thomas Kneib, Stefan Lang, Brian Marx (2013):
 Regression : Models, Methods and Applications. Berlin, Heidelberg.
