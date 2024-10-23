@@ -70,11 +70,11 @@ ForestHealth %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
 ```
 
 
-# Orinary linear model vs. GLM
+# Orinary LM vs. GLM
 
-Why is the ordinary linear models usually not suited to model binary responses (and under which conditions could a linear model might be sufficient)?
+Motivating example for GLMs: Why is the ordinary linear models usually not suited to model binary responses (and under which conditions could a linear model might be sufficient)?
 
-__Beforehand Task 2:__ Getting the link between linear models and general linear models
+__Beforehand Task 2:__ What is the differnce between linear models and general linear models? What is the G in GLM?
 
 - Read Lane (2002) and prepare for the following discussion
     - Why do generalized linear model belong to the family of linear model even though their curvature is not linear?
@@ -82,7 +82,9 @@ __Beforehand Task 2:__ Getting the link between linear models and general linear
     - Which properties distinguish a *generalized linear model* from a *non-linear* model?
 
 
-# Logit regression
+# GLM
+
+@Johannes, ich habe schon Mal was zu GLM vorbereitet, siehe misc. Das ist aber zu viel. Mich würde deine Meinung interessieren, ob es sich lohnt da wsa von zu recyclen?
 
 ## Theory
 

@@ -4,9 +4,8 @@ Johannes, Kai
 
 - [1 Preamble](#1-preamble)
 - [2 Data: `ForestHealth`](#2-data-foresthealth)
-- [3 Orinary linear model vs. Logit
-  model](#3-orinary-linear-model-vs-logit-model)
-- [4 Logit regression](#4-logit-regression)
+- [3 Orinary LM vs. GLM](#3-orinary-lm-vs-glm)
+- [4 GLM](#4-glm)
   - [4.1 Theory](#41-theory)
   - [4.2 Example](#42-example)
 - [5 Model diagnostics](#5-model-diagnostics)
@@ -53,30 +52,35 @@ library(ggeffects)  # Visual interpretation of statistical models
 library(emmeans)    # Testing linear hypotheses
 ```
 
-We kindly ask you to prepare all tasks that are not tagged as ‘in class’
-for the research seminar.
+We ask you to prepare some tasks beforehand to save some time in the
+seminar. Those are tagged as ‘Beforehand task’.
 
-**Task 0:** Getting ready
+**Beforehand task 0:** Getting ready
 
 - Connect to the repository and clone it to your laptop
+- Get R and R Studio running
 - Install the required libraries
 
 Modelling survival probabilities, also known as survival analysis, is
-one of the most important applications for which logistic regression is
-used and which we will use as an example today. Another famous field of
-application is the questionnaire analysis, which will be sketched in the
-PdD examples at the end. The special property of survival data is that
-the response variable can only have binary (or more generally
-categorical) outcomes. This property is the reason, why the values of
-the response that are to be estimated have different outcomes than the
-observations of the response variable. In logistic regression, not the
-outcome of an observation (e.g. dead or alive) is estmimated, but the
-probability that an observation shows an outcome. Logistic regression is
-a possibility to fit a survival probability curve over a continuous
-variable of interest, e.g. the tree age. Logistic regression is
-therefore an alternative to the well-known Weibull survival curves. The
-logit curve resulting from the regression has similar properties as the
-cumulative Weibull distribution. Also the interpretation is comparable.
+one of the most important and most suitable applications for which
+logistic regression is used and which we will also use as an example
+today. Another famous field of application is the questionnaire
+analysis, which will be sketched in the PdD examples at the end. The
+special property of survival data is that the response variable can only
+have binary (or more generally categorical) outcomes. Individuals will
+survive until one specific time point. Idea of survival modelling is to
+estimate this time point and possibly additionally inference the reasons
+survival (or non-survival respectively). This 0/1 property is the
+reason, why the values of the response that are to be estimated have
+different outcomes than the observations of the response variable. In
+logistic regression, not the outcome of an observation (e.g. dead or
+alive) is estimated, but the probability that an observation shows an
+outcome (e.g. suvival). Logistic regression is a possibility to fit a
+survival probability curve over a continuous variable of interest,
+e.g. the tree age. Logistic regression is thus an alternative to the
+well-known Weibull survival curves. The logit curve resulting from the
+regression has similar properties as the cumulative Weibull
+distribution. Also the interpretation is comparable.
 
 # 2 Data: `ForestHealth`
 
@@ -105,8 +109,8 @@ ForestHealth %>% ggplot(aes(y = defoliation, x = age, col = stand)) + geom_point
 
 ![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
-**Task 1:** Getting familiar with the data and understand the nature of
-binary responses
+**Beforehand Task 1:** Getting familiar with the data and understand the
+nature of binary responses
 
 - Load `ForestHealth`
 - Calculate a binary response variable that contains healthy
@@ -120,26 +124,45 @@ binary responses
     some pro and contra arguments and underpin your arguments using
     common numbers or diagrams of (linear) statistical inference.
 
-# 3 Orinary linear model vs. Logit model
+``` r
+ForestHealth <- ForestHealth %>% mutate(diseased = ifelse(defoliation %in% "[0, 12.5)", 0, 1))
+ForestHealth %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
+  geom_smooth(method = "lm")
+```
 
-Why is the ordinary linear models usually not suited to model binary
-responses (and under which conditions could a linear model might be
-sufficient)?
+    ## `geom_smooth()` using formula = 'y ~ x'
 
-**Task 2:** Getting the link between linear models and general linear
-models
+![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+# 3 Orinary LM vs. GLM
+
+Motivating example for GLMs: Why is the ordinary linear models usually
+not suited to model binary responses (and under which conditions could a
+linear model might be sufficient)?
+
+**Beforehand Task 2:** What is the differnce between linear models and
+general linear models? What is the G in GLM?
 
 - Read Lane (2002) and prepare for the following discussion
   - Why do generalized linear model belong to the family of linear model
     even though their curvature is not linear?
-  - Which properties distinguish a generalized linear model from a
-    *linear* model?
-  - Which properties distinguish a generalized linear model from a
+  - Which properties distinguish a *generalized linear model* from a
+    *linear* model? In particular: What is a link function?
+  - Which properties distinguish a *generalized linear model* from a
     *non-linear* model?
 
-# 4 Logit regression
+# 4 GLM
+
+@Johannes, ich habe schon Mal was zu GLM vorbereitet, siehe misc. Das
+ist aber zu viel. Mich würde deine Meinung interessieren, ob es sich
+lohnt da wsa von zu recyclen?
 
 ## 4.1 Theory
+
+**Task 3:** Modeling a disease probability model
+
+- Calculate Logits by hand
+- Create a GLM
 
 ## 4.2 Example
 

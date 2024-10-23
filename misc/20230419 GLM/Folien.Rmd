@@ -1,0 +1,351 @@
+---
+title: "GLM"
+subtitle: "Generalized Linear Models"
+author: "Methods Seminar - Kai"
+date: "19.04.2023"
+output:
+  beamer_presentation:
+    fig_width: 4.5
+    fig_height: 2.5
+    fig_caption: false
+    keep_tex: false
+    pandoc_args: [
+      "--slide-level", "2",
+      "--template", "beamer-goe.tex"]
+toc: false
+classoption: "aspectratio=169"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      error = FALSE,
+                      message = FALSE)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+
+## Introduction/ Overview
+
+- What is a Generalized Linear Model (GLM)?
+    - What is an Ordinary Linear Model (LM)
+    - How do we relax a LM to a GLM?
+
+- When do we use GLMs?
+    - Overview
+    - 3 Examples
+    
+This presentation is based on the textbook *Regression - Models, Methods and Applications by Fahrmeir, Kneib, Lang and Marx (2013), ISBN 978-3-642-34332-2* incl. direct citations. The textbook can be downloaded as PDF from the SUB. The presentation also contains materials from the lecture *GLM by Prof. Thomas Kneib*.
+
+# The Ordinary Linear Model (LM) *Ch. 3 in Fahrmeir et al.*
+
+## LM: Properties
+
+ $$y=\beta_0 + \beta_1 * x_1 + \dots + \beta_k*x_k + \varepsilon$$
+ 
+- Modelling the relationship between $y$ and $x1, \dots x_k$
+- Parameters $\beta_1 \dots \beta_k$ are unknown and need to be estimated
+- The relationship is not exact, as it is affected by random noise $\varepsilon$
+
+**Following fundamental assumptions**
+
+1. The functional relationship between $y$ and $x_1 \dots x_k$ is **linear**
+2. The error $\varepsilon$ is **additive**
+
+## Ordinary Least Squares (OLS) estimation method
+
+The model can be rewritten as a **linear combination**
+
+$$\mathbf{y} = \mathbf{X} \boldsymbol{\beta}+\boldsymbol{\varepsilon}$$
+
+We seek for the vector of parameters $\boldsymbol{\beta}$ that **minimizes the errors** in vector $\boldsymbol{\varepsilon}$. $\mathbf{y}$ is the vector with observations of the dependent variable, $\mathbf{X}$ the matrix with observations of the covariates (design matrix).
+
+If we add *further assumptions*, the vector $\boldsymbol{\beta}$ is straightforwardly solvable/ estiamable.
+
+3. The errors are in mean (expectation) 0 (**unbiasedness**)
+4. constant error variance $\sigma^2$ across observations (**homoscedastic and uncorrelated errors**) $Cov(\boldsymbol{\varepsilon})=E(\boldsymbol{\varepsilon} \boldsymbol{\varepsilon}')=\sigma^2\mathbf{I}$
+5. $\boldsymbol{\varepsilon}$ $\mathbf{x}$ are (stochastically) **independent**
+
+*By the way: Gaussian distribution of the errors is _not_ an assumption - it will (only) become relevant for confidence interval calculation and statistical testing.*
+
+## Ordinary Least Squares (OLS) estimation method
+
+- The unknown regression coefficients $\boldsymbol{\beta}$ are estimated by minimizing the sum of the squared deviations. The squared deviations are:
+
+$$LS(\boldsymbol{\beta})=\sum^n_{i=1} \varepsilon_i=\boldsymbol{\varepsilon}'\boldsymbol{\varepsilon}=\sum^n_{i=1}(y_i-\mathbf{x}'_i * \boldsymbol{\beta})^2$$
+
+It can be rearranged to (page 105 in Fahrmeir et al.):
+$$
+\begin{aligned}
+&=(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})'(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})\\
+&=\mathbf{y}'\mathbf{y}-2\mathbf{y}'\mathbf{X}\boldsymbol{\beta}+\boldsymbol{\beta}'\mathbf{X}'\mathbf{X}\boldsymbol{\beta}
+\end{aligned}
+$$
+
+## Ordinary Least Squares (OLS) estimation method
+
+which can be derived to:
+
+$$
+\begin{aligned}
+\frac{\partial LS(\boldsymbol{\beta})}{\partial \boldsymbol{\beta}}=-2\mathbf{X}' \mathbf{y} + 2\mathbf{X}' \mathbf{X} \boldsymbol{\beta}
+\end{aligned}
+$$
+
+
+We therefore obtain the least squares estimator $\boldsymbol{\hat{\beta}}$ by setting the eq. to zero or
+equivalently by solving the so-called normal equations:
+
+$$
+\begin{aligned}
+\mathbf{X}'\mathbf{X}\boldsymbol{\hat{\beta}}&=\mathbf{X}'\mathbf{y} \\
+\boldsymbol{\hat{\beta}}& =(\mathbf{X}'\mathbf{X})^{-1}\mathbf{X}'\mathbf{y}
+\end{aligned}
+$$
+
+# The principle of Maximum Likelihood
+
+- Alternative philosophy of estimating functional relationships
+- Seeking the set of parameters that most probably describe the observations = maximum plausibility
+- How likely is it that the observations are described by a functional relationship?
+- We need a function that describes the likelihood density of the regression function
+- The estimate becomes also a random quantity
+- This likelihood function is a density distribution function, ML therefore does not work without distributional assumptions!
+- The likelihood function is maximized by calculating the 1st and 2nd derivative and setting the first derivative to zero
+
+# Estimating LM with ML
+
+- Assuming normally distributed errors, the observations can be described by the density: $\mathbf{y} \sim N(\mathbf{X}\boldsymbol{{\beta}}, \sigma^2 \mathbf{I})$. We obtain the likelihood function:
+
+$$
+L(\boldsymbol{\beta},  \sigma^2) = \frac{1}{(2 \pi \sigma^2)^{n/2}}exp\left(-\frac{1}{2\sigma^2}(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})'(\mathbf{y}-\mathbf{X}\boldsymbol{\beta}) \right)
+$$
+- and the log likelihood function
+
+$$
+l(\boldsymbol{\beta},  \sigma^2) =- \frac{n}{2} log(2 \pi) - \frac{n}{2} log(2 \sigma^2) -\frac{1}{2\sigma^2}(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})'(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})
+$$
+
+
+When maximizing the log-likelihood with respect to $\boldsymbol{\beta}$, we can ignore the first two terms because they are independent of $\boldsymbol{\beta}$. Maximizing the rest is  equivalent to minimizing $(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})'(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})$, which is the least squares criterion.
+
+## Numerical example that OLS is eqivalent to ML
+
+On the example on an arithmetic mean
+```{r echo = TRUE}
+dat <- rnorm(100, mean = 50,  sd = 5)
+std <- sd(dat)
+
+## Likelihood Function ##
+L <-  function (x) {sum((log((1 / (sqrt(2 * pi * std^2))) *
+                       (exp( - ((dat - x)^2) / (2 * std^2) )))))}
+```
+
+## Numerical example that OLS is eqivalent to ML
+
+```{r}
+plotDat <- data.frame(x = c(0 : 100))
+plotDat$y <- apply(plotDat, 1, L)
+#curve(expr = L, from = 0, to = 100, n = 100)
+plotDat %>% ggplot(mapping = aes(x = x, y = y)) + geom_line()
+```
+
+## Numerical example that OLS is eqivalent to ML
+
+
+```{r echo=TRUE}
+optimize(f = L,
+  interval = c(0, 100), maximum = TRUE
+)
+
+mean(dat)
+```
+
+# Generalized Linear Models *Ch. 5 in Fahrmeir et al.*
+
+## From LM to GLM
+
+*Why GLM?*
+
+- Linear models are well suited for regression analyses when the response variable is continuous and at least symmetrically distributed
+- In some cases, an appropriate transformation is sufficient to ensure the assumptions (e.g. take logarithm or root of the response variable)
+- However, in many applications the response is not a continuous variable, but e.g. rather binary, categorical, or a count variable
+- Moreover,  considerably skewed data as typical e.g. in a life span, the amount of damages, or income is not estimable with LM
+- Typical problem in e.g. survey analysis
+
+## From LM to GLM
+
+*Within a broad framework, generalized linear models (GLMs) unify many regression approaches with response variables that do not necessarily follow a normal distribution.*
+
+- The assumption of linearity between the covariates and the response is relaxed
+- The relationship must still be described by a linear predictor, but this linear predictor can be related with a monotonic transformation function, the **link function**
+- We thus can relax the fundamental assumptions 1 and 2!
+
+*How is the Generalized Linear Model now connected with the ML philosophy?*
+
+- We can take any **distribution function** from the so called Exponential Family to define the likelihood function
+- The likelihood function will be concave
+- The solution will be unique
+- A closed form solution often exists
+
+*Note that GLM (General**ised** LM) is not to be confused with a General LM*
+
+## Example 1: Count Data Regression
+- Count data often have a non-symmetric (non-gaussian thus anyway) shape
+- For example dbh frequencies in a forest stand
+- dbh frequencies may depend on the trees' ages, stand density, ...
+- An LM would, however, lead to unsatisfactory estimates
+- Count data regression is a common strategy to overcome this issue
+- link function is the log, also the ordinary linear function without a link function is common
+- Distributional assumption is the Poisson distribution
+
+## Example 1: Count Data Regression - Estimation
+
+$$
+L(\boldsymbol{\beta})=\frac{\lambda_i^{y_i}exp(-\lambda_i)}{y_i!}
+$$
+$$
+l(\boldsymbol{\beta})=\sum^n_{i=1}(y_i log(\lambda_i)- \lambda_i)
+$$
+with $log(\lambda_i)=\eta_i=\mathbf{x}_i \boldsymbol{\beta}$
+
+Can be solved as (p. 296 in Fahrmeir et al.)
+
+$$
+\sum^n_{i=1} \mathbf{x}_i(y_i - \lambda_i)
+$$
+$\lambda_i = exp(\mathbf{x}_i \boldsymbol{\beta})$ leads to a nonlinear equation system. The solution must be calculated numerically.
+
+## Example 2: Log-linear Regression
+- Consider an exponential functional relationship $y = x^b*\varepsilon$
+- Distribution of the response is gaussian
+- The link function is the inverse of the functional relationship, thus
+
+$$\eta_i = log( \mathbf{x_i}\boldsymbol{\beta})$$
+
+## Data Example
+
+```{r fig.width=8, fig.height=4}
+allo <- read.csv2("dat/allometry.csv")
+
+par(mfrow=c(1, 2))
+## Graphic a)
+## the stock (unit:fm for solid cubic meters) in relation to dbh
+plot(allo$dbh_mm, allo$stock_mR, ylim=c(0, 6),
+     xlab="dbh [mm]", ylab="stock [fm]")
+## insert graphic label as text (adj=0 => left alignment)
+mtext(text=" original", side=3, line=-1.5, adj=0, font=2, cex=1.2)
+## Graphic b)
+## the log stock in relation to log dbh
+plot(log(allo$dbh_mm), log(allo$stock_mR),
+     xlab="log dbh [mm]", ylab="log stock [fm]")
+## insert graphic label as text
+mtext(text=" logarithm", side=3, line=-1.5, adj=0, font=2, cex=1.2)
+## set the graphics parameters back to their original values
+par(mfrow=c(1, 1))
+```
+
+## Data Example
+
+```{r fig.width=4, fig.height=4, echo=TRUE}
+mod.allo <- glm(stock_mR ~ log(dbh_mm),
+                data = allo,
+                family = gaussian(link = "log"))
+```
+
+## Data Example
+
+```{r fig.width=4, fig.height=4}
+plot(allo$dbh_mm, allo$stock_mR, ylim=c(0, 6),
+     xlab="dbh [mm]", ylab="stock [fm]")
+curve(exp(coef(mod.allo)[1] + coef(mod.allo)[2] * log(x)), add = TRUE)
+
+```
+
+
+
+## Example 2: Binary Regression (Logit Model)
+- Consider a binary response (e.g. yes/ no, dead/ alive, ...)
+- An ordinary LM is obviously not suitable
+
+```{r fig.width=8, fig.height=3.5}
+forest.damage <- read.table("dat/logreg_example.txt", sep=',', header=TRUE)
+
+forest.damage.dist <- aggregate(forest.damage[, c("diseased", "trees")], 
+                              by=list(distance=forest.damage$distance), sum) 
+
+forest.damage$healthy <- forest.damage$trees - forest.damage$diseased
+
+forest.damage.dis <- as.data.frame(lapply(forest.damage, rep, forest.damage$diseased))
+forest.damage.healthy <- as.data.frame(lapply(forest.damage, rep, forest.damage$healthy))
+
+forest.damage.dis$damaged <- 0
+forest.damage.healthy$damaged <- 1
+
+dat <- rbind(forest.damage.dis[,c(1, 2, 6)],
+      forest.damage.healthy[,c(1, 2, 6)])
+
+dat$age.class <- as.factor(dat$age.class)
+
+dat <-  dat %>% filter(age.class == 1)
+
+ggplot(dat, aes(y = damaged, x = distance)) + geom_jitter(height = .1) + scale_y_continuous(breaks = c(0, 1))
+```
+
+
+## Example 2: Binary Regression (Logit Model)
+
+```{r fig.width=4, fig.height=4}
+forest.damage$proportion.diseased <- forest.damage$diseased / forest.damage$trees
+plot(forest.damage$distance, forest.damage$proportion.diseased, xlim=c(0, 600), ylim = c(0, .5), xlab="Distance [m]",
+     ylab="Proportion of diseased trees")
+```
+
+
+## Example 3: Binary Regression (Logit Model)
+- The logit function meets our requirements: It is between 0 and 1 and and s-shaped (sigmoidal)
+- Thus: link = logit $log(\frac{\eta}{1-\eta})$
+- Distribution is usually the binomial distribution (but others are possible)
+
+```{r echo=TRUE}
+
+model.logit  <- glm(cbind(diseased, trees - diseased) ~ distance,
+                   family = binomial(link = "logit"),
+                   data = forest.damage.dist)
+```
+
+
+## Example 3: Binary Regression (Logit Model)
+
+```{r fig.width=4, fig.height=4}
+beta <- coef(model.logit)
+plot(forest.damage$distance, forest.damage$proportion.diseased, ylim=c(0, 0.5), xlim=c(0, 600), xlab="Distance [m]",
+     ylab="Proportion of diseased trees")
+
+## insert the fitted regression functions
+## age.class 1
+curve((exp(beta[1] + beta[2] * x)) / (1 + exp(beta[1] + beta[2] * x)),
+       col="black", lty=2, lwd=1, add=TRUE)
+```
+
+## Example 3: Binary Regression (Logit Model)
+
+Model interpretation is straightforward
+
+```{r}
+summary(model.logit)
+```
+# Concluding remarks
+- A model is generalized linear as long as it
+    - contains a linear predictor,
+    - the link function is a monotonous transformation, and
+    - the distribution of the error is described by the Exponential Family.
+- GLM is an alternative to nasty non-linear regressions.
+- It is lean - It requires low demands on calculation times and calculation resources.
+- It opens all likelihood based inference methods (AIC, Likelihood Ratio, ...)
+- Visualization, model interpretation, model comparison is straightforward.
+- It also opens the other advantages of linear models. It can be connected with General Regression. Thus our assumptions 4 and 5 can also be relaxed.
