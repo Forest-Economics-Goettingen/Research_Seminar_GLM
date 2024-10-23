@@ -84,35 +84,65 @@ __Beforehand Task 2:__ What is the differnce between linear models and general l
 
 # GLM
 
-@Johannes, ich habe schon Mal was zu GLM vorbereitet, siehe misc. Das ist aber zu viel. Mich würde deine Meinung interessieren, ob es sich lohnt da wsa von zu recyclen?
+@Johannes, ich habe schon Mal was zu GLM vorbereitet, siehe misc. Das ist aber zu viel. Mich würde deine Meinung interessieren, ob es sich lohnt davon wsa zu recyclen?
 
-## Theory
+# Logistic regression
 
-__Task 3:__ Modeling a disease probability model
+Instead of modelling $y_i$ directly, we define a regression model that estimates the possibility of a discrete status 1 (e.g. dead)
+
+$$
+\pi_i=\text{E}(y_i)=P(y_i=1),
+$$
+where $\pi_i$ shall vary continuously between 0 and 1 even tough $y_i$ is discrete. To achieve $\pi_i \in[0, 1]$, we apply a transformation (in the sense of Lane (2002)) that transforms ("links") the linear regression formula to the deserved properties. The linear regression formula (so to speak the linear core of the GLM)
+
+$$
+\eta_i=\beta_0+\beta_1 x_{i1}+ \dots + \beta_k x_{ik}
+$$
+is called linear predictor. Instead of using a quite simple link function as Lane (2002) did (the logaritm), binomial regression requires a more sophisticated transformation
+
+$$
+\pi_i=h(\eta_i).
+$$
+
+Along with some less familiar transformations, the logit transformation leads to the desired properties, which is why the binomial is sometimes referred to as logit regression. The term logistic regression comes from the logistic curvature that follows from the logit transformation. The logit response function $h$ relies on the logistic cumulative distribution function
+
+$$
+\pi=h(\eta)=\frac{\text{exp}(\eta)}{1+\text{exp}(\eta)}.
+$$
+The respective inverse, also called link function $h$ reads as
+$$
+g(\pi)=\text{log} \left( \frac{\pi}{1 - \pi}\ \right).
+$$
+The response function follows a Bernoulli distribution. However, grouping observation with same outcomes makes the solving process more efficient and then leads to a Binomial distribution (Fahrmeir et al., 2023, p. 270 - 277), which is why in practiced programming, the Binomial or Quasibinomial distributions are usually taken.
+
+@Johannes, würdest du Logits per Hand rechnen lassen und dann in lm? Um in der Logik von dem Lane Paper zu beleiben?
+
+__Task 3:__ Modeling a disease probability model 
 
 - Calculate Logits by hand
-- Create a GLM
+- Create a univariate GLM over tree age
+- Create a multiple GLM over age and self-chosen promising covariates, save separate to the simple GLM
 
 ```{r}
-
+# Solution
 ```
-
-
-## Example
-
-
 
 # Model diagnostics
 
-## Theory
+Von uns vorgestelltes Summary gemeinsam erklären
+Kreuzvalidierung?
 
-## Example
 
 # Model interpretaion
+
+Von uns vorgestelltes Summary gemeinsam erklären
+Odds multiplicative -> hard to interprete
 
 ## Example
 
 ## Outlook: Multinomial regression
+
+Text und Code verfassen und nur vorstellen, keine Übungsaufgabe
 
     - Forest health multinomial
     - Forest health ordered

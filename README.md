@@ -6,20 +6,17 @@ Johannes, Kai
 - [2 Data: `ForestHealth`](#2-data-foresthealth)
 - [3 Orinary LM vs. GLM](#3-orinary-lm-vs-glm)
 - [4 GLM](#4-glm)
-  - [4.1 Theory](#41-theory)
-  - [4.2 Example](#42-example)
-- [5 Model diagnostics](#5-model-diagnostics)
-  - [5.1 Theory](#51-theory)
-  - [5.2 Example](#52-example)
-- [6 Model interpretaion](#6-model-interpretaion)
-  - [6.1 Example](#61-example)
-  - [6.2 Outlook: Multinomial
-    regression](#62-outlook-multinomial-regression)
-  - [6.3 PhD examples](#63-phd-examples)
-- [7 Literature and Material](#7-literature-and-material)
-  - [7.1 Primary literature](#71-primary-literature)
-  - [7.2 Online resources](#72-online-resources)
-  - [7.3 Books](#73-books)
+- [5 Logistic regression](#5-logistic-regression)
+- [6 Model diagnostics](#6-model-diagnostics)
+- [7 Model interpretaion](#7-model-interpretaion)
+  - [7.1 Example](#71-example)
+  - [7.2 Outlook: Multinomial
+    regression](#72-outlook-multinomial-regression)
+  - [7.3 PhD examples](#73-phd-examples)
+- [8 Literature and Material](#8-literature-and-material)
+  - [8.1 Primary literature](#81-primary-literature)
+  - [8.2 Online resources](#82-online-resources)
+  - [8.3 Books](#83-books)
 
 # 1 Preamble
 
@@ -155,38 +152,86 @@ general linear models? What is the G in GLM?
 
 @Johannes, ich habe schon Mal was zu GLM vorbereitet, siehe misc. Das
 ist aber zu viel. Mich würde deine Meinung interessieren, ob es sich
-lohnt da wsa von zu recyclen?
+lohnt davon wsa zu recyclen?
 
-## 4.1 Theory
+# 5 Logistic regression
+
+Instead of modelling $y_i$ directly, we define a regression model that
+estimates the possibility of a discrete status 1 (e.g. dead)
+
+$$
+\pi_i=\text{E}(y_i)=P(y_i=1),
+$$ where $\pi_i$ shall vary continuously between 0 and 1 even tough
+$y_i$ is discrete. To achieve $\pi_i \in[0, 1]$, we apply a
+transformation (in the sense of Lane (2002)) that transforms (“links”)
+the linear regression formula to the deserved properties. The linear
+regression formula (so to speak the linear core of the GLM)
+
+$$
+\eta_i=\beta_0+\beta_1 x_{i1}+ \dots + \beta_k x_{ik}
+$$ is called linear predictor. Instead of using a quite simple link
+function as Lane (2002) did (the logaritm), binomial regression requires
+a more sophisticated transformation
+
+$$
+\pi_i=h(\eta_i).
+$$
+
+Along with some less familiar transformations, the logit transformation
+leads to the desired properties, which is why the binomial is sometimes
+referred to as logit regression. The term logistic regression comes from
+the logistic curvature that follows from the logit transformation. The
+logit response function $h$ relies on the logistic cumulative
+distribution function
+
+$$
+\pi=h(\eta)=\frac{\text{exp}(\eta)}{1+\text{exp}(\eta)}.
+$$ The respective inverse, also called link function $h$ reads as $$
+g(\pi)=\text{log} \left( \frac{\pi}{1 - \pi}\ \right).
+$$ The response function follows a Bernoulli distribution. However,
+grouping observation with same outcomes makes the solving process more
+efficient and then leads to a Binomial distribution (Fahrmeir et al.,
+2023, p. 270 - 277), which is why in practiced programming, the Binomial
+or Quasibinomial distributions are usually taken.
+
+@Johannes, würdest du Logits per Hand rechnen lassen und dann in lm? Um
+in der Logik von dem Lane Paper zu beleiben?
 
 **Task 3:** Modeling a disease probability model
 
 - Calculate Logits by hand
-- Create a GLM
+- Create a univariate GLM over tree age
+- Create a multiple GLM over age and self-chosen promising covariates,
+  save separate to the simple GLM
 
-## 4.2 Example
+``` r
+# Solution
+```
 
-# 5 Model diagnostics
+# 6 Model diagnostics
 
-## 5.1 Theory
+Von uns vorgestelltes Summary gemeinsam erklären Kreuzvalidierung?
 
-## 5.2 Example
+# 7 Model interpretaion
 
-# 6 Model interpretaion
+Von uns vorgestelltes Summary gemeinsam erklären Odds multiplicative -\>
+hard to interprete
 
-## 6.1 Example
+## 7.1 Example
 
-## 6.2 Outlook: Multinomial regression
+## 7.2 Outlook: Multinomial regression
+
+Text und Code verfassen und nur vorstellen, keine Übungsaufgabe
 
     - Forest health multinomial
     - Forest health ordered
 
-## 6.3 PhD examples
+## 7.3 PhD examples
 
 - Henning
 - Valeska
 
-# 7 Literature and Material
+# 8 Literature and Material
 
 This file as well as all other materials are uploaded on GitHub. You
 should all have ssh access rights, such that you can use your version
@@ -195,19 +240,19 @@ control feature of RStudio to clone the GitHub repository:
 <https://github.com/Forest-Economics-Goettingen/Research_Seminar_GLM>
 <git@github.com>:Forest-Economics-Goettingen/Research_Seminar_GLM.git
 
-## 7.1 Primary literature
+## 8.1 Primary literature
 
 Lane (2002): Generalized linear models in soil science. European Journal
 of Soil Science, 53, 241-251.
 <https://doi.org/10.1046/j.1365-2389.2002.00440.x>
 
-## 7.2 Online resources
+## 8.2 Online resources
 
 Johannes Signer, Kai Husmann (2024): Kursmaterial: Einführung in die
 Datenanalyse mit R.
 <https://github.com/Forest-Economics-Goettingen/KursskriptRBsc>
 
-## 7.3 Books
+## 8.3 Books
 
 Ludwig Fahrmeir, Thomas Kneib, Stefan Lang, Brian Marx (2013):
 Regression : Models, Methods and Applications. Berlin, Heidelberg.
