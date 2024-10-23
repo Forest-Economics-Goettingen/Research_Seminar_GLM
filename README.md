@@ -161,15 +161,19 @@ estimates the possibility of a discrete status 1 (e.g. dead)
 
 $$
 \pi_i=\text{E}(y_i)=P(y_i=1),
-$$ where $\pi_i$ shall vary continuously between 0 and 1 even tough
-$y_i$ is discrete. To achieve $\pi_i \in[0, 1]$, we apply a
-transformation (in the sense of Lane (2002)) that transforms (“links”)
-the linear regression formula to the deserved properties. The linear
-regression formula (so to speak the linear core of the GLM)
+$$
+
+where $\pi_i$ shall vary continuously between 0 and 1 even tough $y_i$
+is discrete. To achieve $\pi_i \in[0, 1]$, we apply a transformation (in
+the sense of Lane (2002)) that transforms (“links”) the linear
+regression formula to the deserved properties. The linear regression
+formula (so to speak the linear core of the GLM)
 
 $$
 \eta_i=\beta_0+\beta_1 x_{i1}+ \dots + \beta_k x_{ik}
-$$ is called linear predictor. Instead of using a quite simple link
+$$
+
+is called linear predictor. Instead of using a quite simple link
 function as Lane (2002) did (the logaritm), binomial regression requires
 a more sophisticated transformation
 
@@ -186,9 +190,15 @@ distribution function
 
 $$
 \pi=h(\eta)=\frac{\text{exp}(\eta)}{1+\text{exp}(\eta)}.
-$$ The respective inverse, also called link function $h$ reads as $$
+$$
+
+The respective inverse, also called link function $h$ reads as
+
+$$
 g(\pi)=\text{log} \left( \frac{\pi}{1 - \pi}\ \right).
-$$ The response function follows a Bernoulli distribution. However,
+$$
+
+The response function follows a Bernoulli distribution. However,
 grouping observation with same outcomes makes the solving process more
 efficient and then leads to a Binomial distribution (Fahrmeir et al.,
 2023, p. 270 - 277), which is why in practiced programming, the Binomial
