@@ -49,7 +49,7 @@ Consider the example data set `forest health` from Fahrmeir et al. (2013). The d
 larch, and pine. Here we will restrict ourselves to beech trees. Every year, the condition of beech trees is categorized by three ordinal categories \[0 \% - 12.5\), \[12.5 \% - 50 \%\), and \[50 \% - 75 \%\). The forth category >75 \% is not captured in the data. The category 0 % signifies that the beech tree is healthy, the category 100 % implies that the tree is dead. See p. 9 of Fahrmeir et al. (2013) for more details.
 
 ```{r}
-load("Data/ForestHealth.rda")
+load("Data/ForestHealth.rda") # rds?
 ForestHealth %>% ggplot(aes(y = defoliation, x = age, col = stand)) + geom_point()
 ```
 
@@ -142,6 +142,10 @@ summary(glm_simple)
 glm_multiple <- ForestHealth %>% select(age, elevation, soil, ph, fertilized, diseased) %>% 
   glm(diseased ~ ., data = .,  family = binomial(link = "logit"))
 summary(glm_multiple)
+
+ForestHealth %>% ggplot(aes(y = diseased, x = age, col = stand)) + geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = binomial(link = "logit")))
+
 ggeffects::ggeffect(glm_multiple, terms = c("age")) %>% plot()
 ggeffects::ggeffect(glm_multiple, terms = c("elevation")) %>% plot()
 ggeffects::ggeffect(glm_multiple, terms = c("soil")) %>% plot()

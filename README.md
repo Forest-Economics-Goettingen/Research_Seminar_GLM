@@ -100,7 +100,7 @@ healthy, the category 100 % implies that the tree is dead. See p. 9 of
 Fahrmeir et al. (2013) for more details.
 
 ``` r
-load("Data/ForestHealth.rda")
+load("Data/ForestHealth.rda") # rds?
 ForestHealth %>% ggplot(aes(y = defoliation, x = age, col = stand)) + geom_point()
 ```
 
@@ -340,22 +340,31 @@ summary(glm_multiple)
     ## Number of Fisher Scoring iterations: 4
 
 ``` r
-ggeffects::ggeffect(glm_multiple, terms = c("age")) %>% plot()
+ForestHealth %>% ggplot(aes(y = diseased, x = age, col = stand)) + geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = binomial(link = "logit")))
 ```
+
+    ## `geom_smooth()` using formula = 'y ~ x'
 
 ![](README_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
 
 ``` r
-ggeffects::ggeffect(glm_multiple, terms = c("elevation")) %>% plot()
+ggeffects::ggeffect(glm_multiple, terms = c("age")) %>% plot()
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->
 
 ``` r
-ggeffects::ggeffect(glm_multiple, terms = c("soil")) %>% plot()
+ggeffects::ggeffect(glm_multiple, terms = c("elevation")) %>% plot()
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
+
+``` r
+ggeffects::ggeffect(glm_multiple, terms = c("soil")) %>% plot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-4-5.png)<!-- -->
 
 ## 4.2 Model diagnostics
 
