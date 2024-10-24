@@ -1,6 +1,6 @@
 ---
 title: "Research Seminar - Logistic Regression"
-author: "Johannes, Kai"
+author: "Kai & Johannes"
 output: 
   github_document:
     toc: true
@@ -27,6 +27,7 @@ We are using the following libraries:
 ```{r, message=FALSE}
 library(tidyverse)  # Data science
 library(ggplot2)    # Visualization
+library(boot)       # For logit() and inv.logit()
 
 # GLM itself is part of the stats package, which is loaded at start up
 library(ggeffects)  # Visual interpretation of statistical models
@@ -41,7 +42,7 @@ __Beforehand task 0:__ Getting ready
 - Get R and R Studio running
 - Install the required libraries
 
-Modelling survival probabilities, also known as survival analysis, is one of the most important and most suitable applications for which logistic regression is used and which we will also use as an example today. Another famous field of application is the questionnaire analysis, which will be sketched in the PdD examples at the end. The special property of survival data is that the response variable can only have binary (or more generally categorical) outcomes. Individuals will survive until one specific time point. Idea of survival modelling is to estimate this time point and possibly additionally inference the reasons survival (or non-survival respectively). This 0/1 property is the reason, why the values of the response that are to be estimated have different outcomes than the observations of the response variable. In logistic regression, not the outcome of an observation (e.g. dead or alive) is estimated, but the probability that an observation shows an outcome (e.g. suvival). Logistic regression is a possibility to fit a survival probability curve over a continuous variable of interest, e.g. the tree age. Logistic regression is thus an alternative to the well-known Weibull survival curves. The logit curve resulting from the regression has similar properties as the cumulative Weibull distribution. Also the interpretation is comparable.
+Modelling survival probabilities, also known as survival analysis, is one of the most important and most suitable applications for which logistic regression is used and which we will also use as an example today. Another widely used field of application is the analysis of questionnaires, which will be sketched in the PhD examples at the end. The special property of survival data is that the response variable can only have binary (or more generally categorical) outcomes. Individuals will survive until one specific time point. The idea of survival modelling is to estimate this time point and possibly additionally inference the reasons survival (or non-survival respectively). This 0/1 property is the reason, why the values of the response that are to be estimated have different outcomes than the observations of the response variable. In logistic regression, not the outcome of an observation (e.g. dead or alive) is estimated, but the **probability that an observation shows an outcome** (e.g. survival). Logistic regression is a possibility to fit a survival probability curve over a continuous variable of interest, e.g. the tree age. Logistic regression is thus an alternative to the well-known Weibull survival curves. The logit curve resulting from the regression has similar properties as the cumulative Weibull distribution. Also the interpretation is comparable.
 
 # Data: `ForestHealth`
 
@@ -89,8 +90,6 @@ __Beforehand Task 2:__ What is the differnce between linear models and general l
 
 # GLM
 
-@Johannes, ich habe schon Mal was zu GLM vorbereitet, siehe misc. Das ist aber zu viel. Mich würde deine Meinung interessieren, ob es sich lohnt davon wsa zu recyclen?
-
 ## Logistic regression
 
 Instead of modelling $y_i$ directly, we define a regression model that estimates the possibility of a discrete status 1 (e.g. dead)
@@ -124,6 +123,114 @@ g(\pi)=\text{log} \left( \frac{\pi}{1 - \pi}\ \right).
 $$
 
 The response function follows a Bernoulli distribution. However, grouping observation with same outcomes makes the solving process more efficient and then leads to a Binomial distribution (Fahrmeir et al., 2023, p. 270 - 277), which is why in practiced programming, the Binomial or Quasibinomial distributions are usually taken. You should stick to these standard combination of distributions of link functions, however, you can freely decide for any of the distributions of the so called exponential family if want.
+
+```{r}
+# Rename
+fh <- ForestHealth
+head(fh)
+
+fh <- fh %>% mutate(diseased = as.numeric(defoliation != "[0, 12.5)"))
+head(fh)
+                    
+# Intercept only model
+
+mean(fh$diseased)
+
+# A linear model
+m1 <- lm(diseased ~ 1, data = fh)
+coef(m1)
+
+# GLM
+m2 <- glm(diseased ~ 1, family = binomial(), data = fh)
+
+predict(m2, type = "response")[1]
+predict(m2, type = "link")[1]
+inv.logit(coef(m2))[1]
+
+# We could calculate it without a model
+
+p <- mean(fh$diseased)
+
+p
+logit(p)
+inv.logit(logit(p))
+
+
+# With Groups
+# Lets calcualte the probability for being diseased for different stand
+# types
+
+m1 <- glm(diseased ~ stand, family = binomial(), data = fh)
+summary(m1)
+
+unique(fh$stand)
+nd <- data.frame(stand = c("deciduous", "mixed"))
+predict(m1, nd, type = "response")
+predict(m1, nd, type = "link")
+inv.logit(predict(m1, nd, type = "link"))
+
+
+# A linear model does no longer work
+m2 <- lm(diseased ~ stand, data = fh)
+coef(m2)
+
+# However, we could do the logit transformation beforehand
+d1 <- data.frame(
+  stand = c("mixed", "deciduous"), 
+  logit = table(fh$stand, fh$diseased) |> 
+    apply(1, function(x) x[2] / sum(x)) |> 
+    logit()
+)
+d1
+
+# And then estimate a linear model and then backtransform
+m3 <- lm(logit ~ stand, data = d1)
+coef(m3)
+inv.logit(coef(m3))
+
+# Now lets add a continouse covariate -- age. We have to bin age and transform each bin and fit a linear model to this data. 
+range(fh$age)
+cut(fh$age, breaks = seq(20, 240, 20))
+
+d <- fh |> mutate(g = age - (age %% 25)) |> 
+  group_by(g) |> 
+  summarize(logit = logit(mean(diseased))) |> 
+  mutate(age = g + 12.5)
+
+m1 <- lm(logit ~ age, data = d)
+coef(m1)
+
+m2 <- glm(diseased ~ age, data = fh, family = binomial())
+coef(m2)
+
+nd <- data.frame(age = c(10, 50, 100))
+predict(m1, nd)
+predict(m2, nd)
+
+predict(m1, nd) |> inv.logit()
+predict(m2, nd) |> inv.logit()
+
+# We can do better by increasing the number of classes
+d <- fh |> mutate(g = age - (age %% 2)) |> 
+  group_by(g) |> 
+  summarize(logit = logit(mean(diseased))) |> 
+  mutate(age = g + 1) |> 
+  filter(is.finite(logit))
+
+m1 <- lm(logit ~ age, data = d)
+coef(m1)
+
+m2 <- glm(diseased ~ age, data = fh, family = binomial())
+coef(m2)
+
+predict(m1, nd) |> inv.logit()
+predict(m2, nd) |> inv.logit()
+
+# We now have many groups with 0 or very few observations. If we would include a second covariate, e.g. stand, the situations becomes even worse.
+
+# So its a good idea, to use a GLM, where transformation is built into the model
+
+```
 
 @Johannes, würdest du Logits per Hand rechnen lassen und dann in lm? Um in der Logik von dem Lane Paper zu beleiben?
 
