@@ -547,7 +547,7 @@ coef(glm_stand_by_hand)
 ```
 
     ##   (Intercept)    standmixed 
-    ##  3.400754e-17 -1.061544e+00
+    ## -7.850462e-17 -1.061544e+00
 
 ``` r
 # Backtransformation gives us the same group means as the GLM.
@@ -612,7 +612,7 @@ p1 <- d %>% ggplot(aes(y = logit, x = age)) + geom_point() +
   geom_abline(intercept = coef(glm_age_by_hand)["(Intercept)"],
               slope = coef(glm_age_by_hand)["age"])
 
-p2 <- d %>% ggplot(aes(y = inv.logit(logit), x = age)) + geom_point() + geom_function(fun = function (x) {inv.logit(-2.59795 + 0.01391 * x)})
+p2 <- d %>% ggplot(aes(y = inv.logit(logit), x = age)) + geom_point() + geom_function(fun = function (x) {inv.logit(coef(glm_age_by_hand)["(Intercept)"] + coef(glm_age_by_hand)["age"] * x)})
 
 p1 + p2
 ```
