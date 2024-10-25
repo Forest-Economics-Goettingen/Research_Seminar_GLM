@@ -48,13 +48,13 @@ Modelling survival probabilities, also known as survival analysis, is one of the
 
 # Data: `ForestHealth`
 
-Consider the example data set `ForestHealth` from Fahrmeir et al. (2013). The data set consists of 16 variables with 1796 observations on forest health to identify potential factors influencing the health status of trees and therefore the vital status of the forest. The data in our example come from a project in the forest of Rothenbuch (Spessart), which has been carried out by Axel Göttlein (Technical University, Munich) since 1982. Five tree species are part of this survey: beech, oak, spruce, larch, and pine. Here we will restrict ourselves to beech trees. Every year, the condition of beech trees is categorized by three ordinal categories \[0 \% - 12.5\), \[12.5 \% - 50 \%\), and \[50 \% - 75 \%\). The forth category >75 \% is not captured in the data. The category 0 % signifies that the beech tree is healthy, the category 100 % implies that the tree is dead. See Fahrmeir et al. (2013, p. 9) for more details.
+Consider the example data set `ForestHealth` from Fahrmeir et al. (2013). The data set consists of 16 variables with 1796 observations on forest health to identify potential factors influencing the health status of trees and therefore the vital status of the forest. The data in our example come from a project in the forest of Rothenbuch (Spessart), which has been carried out by Axel Göttlein (Technical University, Munich) since 1982. Five tree species are part of this survey: beech, oak, spruce, larch, and pine. Here we will restrict ourselves to beech trees. Every year, the condition of beech trees is categorized by three ordinal categories $\[0 \% - 12.5\)$, $\[12.5 \% - 50 \%\)$, and $\[50 \% - 75 \%\)$. The forth category $>75 \%$ is not captured in the data. The category 0 % signifies that the beech tree is healthy, the category 100 % implies that the tree is dead. See Fahrmeir et al. (2013, p. 9) for more details.
 
 
 __Beforehand Task 1:__ Getting familiar with the data and with the nature of binary responses
 
 - Load `ForestHealth`, rename to `fh`
-- Create a binary response variable that contains healthy (defoliation \[0 \% - 12.5\)) and unhealthy (\[12.5 \% - 75 \%\)) trees
+- Create a binary response variable that contains healthy (defoliation $\[0 \% - 12.5\)$) and unhealthy ($\[12.5 \% - 75 \%\)$) trees
 - Perform relevant descriptive statistics to get an overview
 - Which variables might have an impact on the tree health?
 - Fit an ordinary linear model `lm` to estimate the health status over the age
@@ -164,10 +164,9 @@ sum(fh$diseased) / nrow(fh)
 mean(fh$diseased)
 
 
-# A linear model
-#m1 <- lm(diseased ~ 1, data = fh)
-#coef(m1)
-# @Johannes, das kann weg oder? Das ist nicht anschlussfähig, da das später ja nicht mehr geht. Verwirrt nur?!
+# This is the same as a linear model
+m1 <- lm(diseased ~ 1, data = fh)
+coef(m1)
 ```
 
 Another option is to calculate an intercept only logistic regression. This option appears to be too complicated to the simple problem. We use it to underpin the how a GLM calculates the probabilities out of a sample. We come back to this.
@@ -213,10 +212,10 @@ predict(glm_stand, nd, type = "response")
 (x <- predict(glm_stand, nd, type = "link"))
 inv.logit(x) # gives the response again
 
-# @Johannes: Weg oder?
 # A linear model does no longer work
-#m2 <- lm(diseased ~ stand, data = fh)
-#coef(m2)
+m2 <- lm(diseased ~ stand, data = fh)
+coef(m2)
+
 ```
 
 And now the promised linear model with data transformation, the GLM by hand:
@@ -245,8 +244,6 @@ Interim interpretation: Just as in logarithmic regression, logistic regression p
 Now let's derive the typical disease model, modelling the disease probability over age to strengthen the advantages of GLM. We add the continuous variable `age`. As any observation can be 0 or 1 only, we cannot calculate $p$ for the single observations. A problem that not yet occurred (not in Lane (2002)/ never in log-linear regression, not in our simpler disease models). We need to group the original observations to create observations of $p$ for our model. Best would be to have multiple observations for each outcome of the continuous variable, which is, however, not likely for continuous variables. We thus need to define intervals of ages.
 
 ```{r}
-# cut(fh$age, breaks = seq(20, 240, 20)) # 20-year-age-groups @ Johannes, kann jetz auch weg oder?
-
 d <- fh |> mutate(g = age - (age %% 25)) |> 
   group_by(g) |> 
   summarize(logit = logit(mean(diseased))) |> # Calc. logits for groups

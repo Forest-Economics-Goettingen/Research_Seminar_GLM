@@ -109,18 +109,18 @@ in our example come from a project in the forest of Rothenbuch
 University, Munich) since 1982. Five tree species are part of this
 survey: beech, oak, spruce, larch, and pine. Here we will restrict
 ourselves to beech trees. Every year, the condition of beech trees is
-categorized by three ordinal categories \[0 % - 12.5), \[12.5 % - 50 %),
-and \[50 % - 75 %). The forth category \>75 % is not captured in the
-data. The category 0 % signifies that the beech tree is healthy, the
-category 100 % implies that the tree is dead. See Fahrmeir et al. (2013,
-p. 9) for more details.
+categorized by three ordinal categories $\[0 \% - 12.5\)$,
+$\[12.5 \% - 50 \%\)$, and $\[50 \% - 75 \%\)$. The forth category
+$>75 \%$ is not captured in the data. The category 0 % signifies that
+the beech tree is healthy, the category 100 % implies that the tree is
+dead. See Fahrmeir et al. (2013, p. 9) for more details.
 
 **Beforehand Task 1:** Getting familiar with the data and with the
 nature of binary responses
 
 - Load `ForestHealth`, rename to `fh`
 - Create a binary response variable that contains healthy (defoliation
-  \[0 % - 12.5)) and unhealthy (\[12.5 % - 75 %)) trees
+  $\[0 \% - 12.5\)$) and unhealthy ($\[12.5 \% - 75 \%\)$) trees
 - Perform relevant descriptive statistics to get an overview
 - Which variables might have an impact on the tree health?
 - Fit an ordinary linear model `lm` to estimate the health status over
@@ -384,11 +384,13 @@ mean(fh$diseased)
     ## [1] 0.3792526
 
 ``` r
-# A linear model
-#m1 <- lm(diseased ~ 1, data = fh)
-#coef(m1)
-# @Johannes, das kann weg oder? Das ist nicht anschlussfähig, da das später ja nicht mehr geht. Verwirrt nur?!
+# This is the same as a linear model
+m1 <- lm(diseased ~ 1, data = fh)
+coef(m1)
 ```
+
+    ## (Intercept) 
+    ##   0.3792526
 
 Another option is to calculate an intercept only logistic regression.
 This option appears to be too complicated to the simple problem. We use
@@ -512,11 +514,13 @@ inv.logit(x) # gives the response again
     ## 0.5000000 0.2570146
 
 ``` r
-# @Johannes: Weg oder?
 # A linear model does no longer work
-#m2 <- lm(diseased ~ stand, data = fh)
-#coef(m2)
+m2 <- lm(diseased ~ stand, data = fh)
+coef(m2)
 ```
+
+    ## (Intercept)  standmixed 
+    ##   0.3785073  -0.1214927
 
 And now the promised linear model with data transformation, the GLM by
 hand:
@@ -543,7 +547,7 @@ coef(glm_stand_by_hand)
 ```
 
     ##   (Intercept)    standmixed 
-    ## -7.850462e-17 -1.061544e+00
+    ##  3.400754e-17 -1.061544e+00
 
 ``` r
 # Backtransformation gives us the same group means as the GLM.
@@ -573,8 +577,6 @@ however, not likely for continuous variables. We thus need to define
 intervals of ages.
 
 ``` r
-# cut(fh$age, breaks = seq(20, 240, 20)) # 20-year-age-groups @ Johannes, kann jetz auch weg oder?
-
 d <- fh |> mutate(g = age - (age %% 25)) |> 
   group_by(g) |> 
   summarize(logit = logit(mean(diseased))) |> # Calc. logits for groups
