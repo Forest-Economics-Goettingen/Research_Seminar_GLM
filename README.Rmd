@@ -13,14 +13,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Preamble
 
-This README file serves as an outline of today's topics and contains all required materials or links to the materials. This file and all materials can be found on github. Today's aim is
+This README file serves as an outline of today's topics and contains or links to all materials required. This file and all materials can be found on github. Today's aims are
 
-  - to explain the structure of the **data** for which a logistic regression can be performed, 
-  - to explain the special properties of the **logistic regression** and thereby introduce the concept of generalized regression, and
-  - to **perform and interpret** a logistic regression in `R`.
-  - At the end, examples from **current research projects** are shown and discussed.
+  - to have a loot at the type of **data** for which a logistic regression can be performed and
+  - to discuss one of the most relevant examples for which logistic regression are often used. On the basis of this example, 
+  - we take a deeper look the special **properties** of the logistic regression and thereby repeat the concept of generalized regression and
+  - **perform and interpret** a logistic regression in `R`.
+  - At the end, 2 short examples from **current research projects** are presented and discussed.
   
-The martial contains texts and examples from the textbook Fahrmeir et al. (2013) as well as parts and ideas from the corresponding lecture `GLM` by Prof. Thomas Kneib, Chair of Statistics. Furthermore, parts of the lectures `Statistical Data Analysis with R` and `Advanced Statistical Programming` of the forest faculty are included.
+The martial contains contents, ideas and examples from the textbook Fahrmeir et al. (2013) as well as parts as from the associated lecture series `GLM` by Professor Thomas Kneib, Chair of Statistics. Furthermore, parts of the lectures `Statistical Data Analysis with R` and `Advanced Statistical Programming` of the forest faculty are included. We ask you to prepare some tasks beforehand to save some time in the seminar. Those are tagged as **Beforehand task**.
+
 
 We are using the following libraries:
 
@@ -34,65 +36,89 @@ library(ggeffects)  # Visual interpretation of statistical models
 library(emmeans)    # Testing linear hypotheses
 ```
 
-We ask you to prepare some tasks beforehand to save some time in the seminar. Those are tagged as 'Beforehand task'.
-
 __Beforehand task 0:__ Getting ready
 
 - Connect to the repository and clone it to your laptop
 - Get R and R Studio running
 - Install the required libraries
 
-Modelling survival probabilities, also known as survival analysis, is one of the most important and most suitable applications for which logistic regression is used and which we will also use as an example today. Another widely used field of application is the analysis of questionnaires, which will be sketched in the PhD examples at the end. The special property of survival data is that the response variable can only have binary (or more generally categorical) outcomes. Individuals will survive until one specific time point. The idea of survival modelling is to estimate this time point and possibly additionally inference the reasons survival (or non-survival respectively). This 0/1 property is the reason, why the values of the response that are to be estimated have different outcomes than the observations of the response variable. In logistic regression, not the outcome of an observation (e.g. dead or alive) is estimated, but the **probability that an observation shows an outcome** (e.g. survival). Logistic regression is a possibility to fit a survival probability curve over a continuous variable of interest, e.g. the tree age. Logistic regression is thus an alternative to the well-known Weibull survival curves. The logit curve resulting from the regression has similar properties as the cumulative Weibull distribution. Also the interpretation is comparable.
+# Introduction
+
+Modelling survival probabilities, also known as survival analysis, is one of the most important and most suitable purposes for which logistic regression is used and which we will use as an example today. (Another widely used field of application is the analysis of questionnaires, which will be sketched in the PhD examples at the end.) The specialty of survival data is that the response variable can only have binary (or more generally categorical) outcomes. The individuals survive until a certain point in time occurs, or more generally, until a certain event occurs. The simplest models only contain the time, i.e. the age of the individuals. They give the average unconditional probability of survival. More complex models can take multiple aspects into account. The idea of survival modelling is to estimate this event and possibly additionally inference the reasons survival (or non-survival respectively). This 0/1 property is the reason, why the values of the response that are to be estimated have different outcomes than the observations of the response variable. In logistic regression, not the outcome of an observation $y_i$ (e.g. dead or alive) is estimated, but the **probability that an observation shows an outcome**, a fundamental contrast to ordinary linear regression. Logistic regression is a possibility to fit a survival probability curve over a continuous variable of interest, e.g. the tree age. Fact for the economists: Logistic regression is thus an alternative to the well-known Weibull survival curves. The regression curve has similar properties as the cumulative Weibull distribution and the the interpretation is comparable. Simply spoken, the advantage of Weibull-function is the straightforward parameter interpretation. Logistic regression comes more from the field of statistical inference and thus has more straightforward test procedures (multiple variable selection, linear hypotheses, quality of fit, ...) and is easy to estimate (in terms of programming and also technically).
 
 # Data: `ForestHealth`
 
-Consider the example data set `forest health` from Fahrmeir et al. (2013). The data set consists of 16 variables with 1796 observations on forest health to identify potential factors influencing the health status of trees and therefore the vital status of the forest. In addition to covariates characterizing a tree and its stand, the exact locations of the trees are known. The interest is on detecting temporal and spatial trends while accounting for further covariate effects in a flexible manner. The data in our example come from a specific project in the forest of Rothenbuch (Spessart), which has been carried out by Axel Göttlein (Technical University, Munich) since 1982. Five tree species are part of this survey: beech, oak, spruce,
-larch, and pine. Here we will restrict ourselves to beech trees. Every year, the condition of beech trees is categorized by three ordinal categories \[0 \% - 12.5\), \[12.5 \% - 50 \%\), and \[50 \% - 75 \%\). The forth category >75 \% is not captured in the data. The category 0 % signifies that the beech tree is healthy, the category 100 % implies that the tree is dead. See p. 9 of Fahrmeir et al. (2013) for more details.
+Consider the example data set `ForestHealth` from Fahrmeir et al. (2013). The data set consists of 16 variables with 1796 observations on forest health to identify potential factors influencing the health status of trees and therefore the vital status of the forest. The data in our example come from a project in the forest of Rothenbuch (Spessart), which has been carried out by Axel Göttlein (Technical University, Munich) since 1982. Five tree species are part of this survey: beech, oak, spruce, larch, and pine. Here we will restrict ourselves to beech trees. Every year, the condition of beech trees is categorized by three ordinal categories \[0 \% - 12.5\), \[12.5 \% - 50 \%\), and \[50 \% - 75 \%\). The forth category >75 \% is not captured in the data. The category 0 % signifies that the beech tree is healthy, the category 100 % implies that the tree is dead. See Fahrmeir et al. (2013, p. 9) for more details.
 
-```{r}
-load("Data/ForestHealth.rda") # rds?
-ForestHealth %>% ggplot(aes(y = defoliation, x = age, col = stand)) + geom_point()
-```
 
-__Beforehand Task 1:__ Getting familiar with the data and understand the nature of binary responses
+__Beforehand Task 1:__ Getting familiar with the data and with the nature of binary responses
 
-- Load `ForestHealth`
-- Calculate a binary response variable that contains healthy (defoliation \[0 \% - 12.5\)) and unhealthy (\[12.5 \% - 75 \%\)) trees
-- Perform relevant descriptive statistics
+- Load `ForestHealth`, rename to `fh`
+- Create a binary response variable that contains healthy (defoliation \[0 \% - 12.5\)) and unhealthy (\[12.5 \% - 75 \%\)) trees
+- Perform relevant descriptive statistics to get an overview
 - Which variables might have an impact on the tree health?
 - Fit an ordinary linear model `lm` to estimate the health status over the age
-- Add one another variable that seems to influence the tree health
+- Add **one** another variable that seems to influence the tree health
   -   Are these two models suitable to estimate the health status? Give some pro and contra arguments and underpin your arguments using common numbers or diagrams of (linear) statistical inference.
-
+  
 ```{r}
-ForestHealth <- ForestHealth %>% mutate(diseased = ifelse(defoliation %in% "[0, 12.5)", 0, 1))
-ForestHealth %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
+
+# Loading ForestHealth
+load("Data/ForestHealth.rda")
+
+fh <- ForestHealth
+
+# Creating the binary variable diseased (0 = healthy, 1 = diseased)
+fh <- fh %>% mutate(diseased = ifelse(defoliation %in% "[0, 12.5)", 0, 1))
+
+# Overview
+summary(fh)
+
+# Linear model
+fh %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
   geom_smooth(method = "lm")
-lm_simple <- ForestHealth %>% lm(diseased ~ age, data = .)
+lm_simple <- fh %>% lm(diseased ~ age, data = .)
 summary(lm_simple)
-lm_multiple <- ForestHealth %>% select(age, elevation, soil, ph, fertilized, diseased) %>%  lm(diseased ~ ., data = .)
-summary(lm_multiple)
-ggeffects::ggeffect(lm_multiple, terms = "age") %>% plot()
+
+# Multiple linear model: Age, stand
+lm_multiple_1 <- fh %>% select(diseased, age, stand) %>%  lm(diseased ~ ., data = .)
+summary(lm_multiple_1)
+
+fh %>% ggplot(aes(y = diseased, x = age, col = stand)) + geom_point() +
+  geom_smooth(method = "lm")
+
+# Multiple linear model: Age, ph
+lm_multiple_2 <- fh %>% select(diseased, age, ph) %>%  lm(diseased ~ ., data = .)
+summary(lm_multiple_2)
+
+# Marginal effects
+p1 <- ggeffects::ggeffect(lm_multiple_2, terms = "age") %>% plot()
+p2 <- ggeffects::ggeffect(lm_multiple_2, terms = "ph") %>% plot()
+
+library(patchwork)
+
+p1 + p2
 ```
 
 
 # Orinary LM vs. GLM
 
-Motivating example for GLMs: Why is the ordinary linear models usually not suited to model binary responses (and under which conditions could a linear model might be sufficient)?
+Why is the ordinary linear models usually not suited to model binary responses (and under which conditions could a linear model might be sufficient)? Consider the results from task 1 and elaborate the question further in task 2.
 
-__Beforehand Task 2:__ What is the differnce between linear models and general linear models? What is the G in GLM?
+__Beforehand Task 2:__ What is the difference between linear models and general linear models? What adds the G to LM?
 
-- Read Lane (2002) and prepare for the following discussion
-    - Why do generalized linear model belong to the family of linear model even though their curvature is not linear?
+- Read Lane (2002) and prepare for the following discussion:
+    - Why do generalized linear model belong to the family of linear models even though their curvature is not linear?
     - Which properties distinguish a *generalized linear model* from a *linear* model? In particular: What is a link function?
     - Which properties distinguish a *generalized linear model* from a *non-linear* model?
 
+# Logistic regression
 
-# GLM
+The GLM philosphy is explained directly using the example of logistic regression. Generally, in contrast to LMs, GLMs have a link function and allow arbitrary assumptions to be made about the residual distribution. Other existing differences are not included.
 
-## Logistic regression
+## Theoretical background
 
-Instead of modelling $y_i$ directly, we define a regression model that estimates the possibility of a discrete status 1 (e.g. dead)
+Instead of modelling $y_i$ directly, we define a regression model that estimates the possibility of a discrete status 1 (e.g. diseased)
 
 $$
 \pi_i=\text{E}(y_i)=P(y_i=1),
@@ -104,13 +130,14 @@ $$
 \eta_i=\beta_0+\beta_1 x_{i1}+ \dots + \beta_k x_{ik}
 $$
 
-is called linear predictor. Instead of using a quite simple link function as Lane (2002) did (the logaritm), binomial regression requires a more sophisticated transformation
+is called linear predictor. Binomial regression requires a more sophisticated transformation than the log-normal regression performed in Lane (2002). However, the principle is the same.
+
 
 $$
 \pi_i=h(\eta_i).
 $$
 
-Along with some less familiar transformations, the logit transformation leads to the desired properties, which is why the binomial is sometimes referred to as logit regression. The term logistic regression comes from the logistic curvature that follows from the logit transformation. The logit response function $h$ relies on the logistic cumulative distribution function
+Along with some less familiar transformations, the logit transformation leads to the desired properties of survival analysis, which is why the binomial is sometimes referred to as logit regression. The term logistic regression comes from the logistic (s shape) curvature that follows from the logit transformation (In this sense, Weibull functions, Bertalanffy growth functions and any other s shaped regression curves are also logistic regressions). The logit response function $h$ relies on the logistic cumulative distribution function
 
 $$
 \pi=h(\eta)=\frac{\text{exp}(\eta)}{1+\text{exp}(\eta)}.
@@ -122,59 +149,75 @@ $$
 g(\pi)=\text{log} \left( \frac{\pi}{1 - \pi}\ \right).
 $$
 
-The response function follows a Bernoulli distribution. However, grouping observation with same outcomes makes the solving process more efficient and then leads to a Binomial distribution (Fahrmeir et al., 2023, p. 270 - 277), which is why in practiced programming, the Binomial or Quasibinomial distributions are usually taken. You should stick to these standard combination of distributions of link functions, however, you can freely decide for any of the distributions of the so called exponential family if want.
+The response function follows a Bernoulli distribution. However, grouping observation with same outcomes makes the solving process more efficient and then leads to a Binomial distribution (Fahrmeir et al., 2023, p. 270 - 277), which is why in practiced programming, the Binomial or Quasibinomial distributions are usually taken. You should stick to these standard combination of distributions of link functions, however, you can freely decide for any of the distributions of the so called exponential family if you know what you do.
+
+## Developing a GLM by hand
+
+We want to develop the principle of the link function by a self-programmed data transformation. Let's start simple. We firstly calculate the mean disease probability in the data set without any covariates (even without `age`). Straightforward calculation is to calculate the ratio of successes (diseased trees) in relation to all trees as
 
 ```{r}
-# Rename
-fh <- ForestHealth
-head(fh)
-
-fh <- fh %>% mutate(diseased = as.numeric(defoliation != "[0, 12.5)"))
-head(fh)
-                    
-# Intercept only model
-
+sum(fh$diseased) / nrow(fh)
 mean(fh$diseased)
 
+
 # A linear model
-m1 <- lm(diseased ~ 1, data = fh)
-coef(m1)
+#m1 <- lm(diseased ~ 1, data = fh)
+#coef(m1)
+# @Johannes, das kann weg oder? Das ist nicht anschlussfähig, da das später ja nicht mehr geht. Verwirrt nur?!
+```
 
+Another option, which is seemingly so straightforward at the moment, is to calculate an intercept only logistic regression.
+
+```{r}
 # GLM
-m2 <- glm(diseased ~ 1, family = binomial(), data = fh)
+glm_intercept_only <- glm(diseased ~ 1, family = binomial(), data = fh)
+```
 
-predict(m2, type = "response")[1]
-predict(m2, type = "link")[1]
-inv.logit(coef(m2))[1]
+Result (prediction) is the average disease probability. Additionally, we get the prediction of the link function. Generally, the GLM output provides predictions for the response, the original scale. In Lane (2002), this response was $y_o=\beta_0 \beta_1^{x_1}$. The link, respectively, provides estimations on the scale of the linear predictor (here, the logit, in Lane the log). Applying the inverse of the logit function `exp(x)/(1+exp(x))` to the prediction of the link thus, again, gives the response.
 
-# We could calculate it without a model
+```{r}
+predict(glm_intercept_only, type = "response")[1]
+(x <- predict(glm_intercept_only, type = "link")[1])
 
-p <- mean(fh$diseased)
+exp(x) / (1+exp(x))
+```
 
-p
-logit(p)
-inv.logit(logit(p))
+Analogously to Lane (2002), we can also calculate the logits by hand (we transform the data). Still for the case of a simple population mean, we get
 
+```{r}
+(p <- mean(fh$diseased))
 
-# With Groups
-# Lets calcualte the probability for being diseased for different stand
-# types
+log(p / (1 - p))# logit(p)
 
-m1 <- glm(diseased ~ stand, family = binomial(), data = fh)
-summary(m1)
+inv.logit(logit(p)) # short for exp(x) / (1+exp(x))
+```
 
-unique(fh$stand)
+Further developing the model, we now define groups of mixture type `stand` with differing disease probabilities:
+
+```{r}
+# Firstly, the GLM considering one categorical variable
+glm_stand <- glm(diseased ~ stand, family = binomial(), data = fh)
+summary(glm_stand)
+
+# Again, we fetch disease probabilities for the real scale (response) and
+# for the logit-transformed scale (link) 
+
 nd <- data.frame(stand = c("deciduous", "mixed"))
-predict(m1, nd, type = "response")
-predict(m1, nd, type = "link")
-inv.logit(predict(m1, nd, type = "link"))
+predict(glm_stand, nd, type = "response")
+predict(glm_stand, nd, type = "link")
+inv.logit(predict(glm_stand, nd, type = "link")) # gives the link
 
+# @Johannes: Weg oder?
 
 # A linear model does no longer work
-m2 <- lm(diseased ~ stand, data = fh)
-coef(m2)
+#m2 <- lm(diseased ~ stand, data = fh)
+#coef(m2)
+```
 
-# However, we could do the logit transformation beforehand
+And now the promised data transformation:
+
+```{r}
+# Do the logit transformation by hand ...
 d1 <- data.frame(
   stand = c("mixed", "deciduous"), 
   logit = table(fh$stand, fh$diseased) |> 
@@ -183,56 +226,73 @@ d1 <- data.frame(
 )
 d1
 
-# And then estimate a linear model and then backtransform
+# ... and then estimate an ordinary linear model.
 m3 <- lm(logit ~ stand, data = d1)
 coef(m3)
-inv.logit(coef(m3))
 
-# Now lets add a continouse covariate -- age. We have to bin age and transform each bin and fit a linear model to this data. 
-range(fh$age)
-cut(fh$age, breaks = seq(20, 240, 20))
+# Backtransformation gives us the same group means as the GLM.
+inv.logit(coef(m3))
+```
+
+Interim interpretation: Just as in logarithmic regression, logistic regression performs a "in-model" transformation. Doing data transformation to linearize the data leads (in this example) to the same results. Now let's derive the typical disease model, modelling the disease probability over age. We thus add a continuous variable `age`. Any observation can be 0 or 1 only, we thus cannot calculate $p$ for the observations. A problem that not yet occurred (not in Lane (2002), not in our simpler disease models). We need to define groups with at least 2 observations to get $p$. Best would be to have multiple observations for each age, which is, however, not likely for continuous variables. We thus need to define intervals of ages.
+
+```{r}
+cut(fh$age, breaks = seq(20, 240, 20)) # 20-year-age-groups
 
 d <- fh |> mutate(g = age - (age %% 25)) |> 
   group_by(g) |> 
-  summarize(logit = logit(mean(diseased))) |> 
+  summarize(logit = logit(mean(diseased))) |> # Calc. logits for groups
   mutate(age = g + 12.5)
 
-m1 <- lm(logit ~ age, data = d)
-coef(m1)
+head(d)
 
-m2 <- glm(diseased ~ age, data = fh, family = binomial())
-coef(m2)
+self_tailored_glm_age <- lm(logit ~ age, data = d) # Fit a linear regression through the logits
+coef(self_tailored_glm_age)
+```
+
+The logit-transformed data is indeed linear (more or less) and the back-transformed regression function shows indeed an s-shaped curve that looks familiar.
+
+```{r}
+p1 <- d %>% ggplot(aes(y = logit, x = age)) + geom_point() + geom_abline(intercept = coef(self_tailored_glm_age)["(Intercept)"],
+                                                                   slope = coef(self_tailored_glm_age)["age"])
+# @Johannes, da hab ich was falsch verstanden... 
+p2 <- d %>% ggplot(aes(y = inv.logit(logit), x = age)) + geom_point() + geom_function(fun = function (x) {exp(2.59795 + 0.01391 * x) / (1 + exp(2.59795 + 0.01391 * x))})
+
+p1 + p2
+```
+
+
+```{r}
+glm_age <- glm(diseased ~ age, data = fh, family = binomial(link = "logit"))
+coef(glm_age)
 
 nd <- data.frame(age = c(10, 50, 100))
-predict(m1, nd)
-predict(m2, nd)
+predict(self_tailored_glm_age, nd)
+predict(glm_age, nd)
 
-predict(m1, nd) |> inv.logit()
-predict(m2, nd) |> inv.logit()
+predict(self_tailored_glm_age, nd) |> inv.logit()
+predict(glm_age, nd) |> inv.logit()
+predict(glm_age, nd, type = "response")
+```
 
-# We can do better by increasing the number of classes
+We can do better by increasing the number of classes. And this already gives the argument why to use `GLM` instead of diy. 
+
+```{r}
 d <- fh |> mutate(g = age - (age %% 2)) |> 
   group_by(g) |> 
   summarize(logit = logit(mean(diseased))) |> 
   mutate(age = g + 1) |> 
   filter(is.finite(logit))
 
-m1 <- lm(logit ~ age, data = d)
-coef(m1)
+self_tailored_glm_age_2 <- lm(logit ~ age, data = d)
+coef(self_tailored_glm_age_2)
 
-m2 <- glm(diseased ~ age, data = fh, family = binomial())
-coef(m2)
+predict(self_tailored_glm_age_2, nd) |> inv.logit()
+predict(glm_age, nd) |> inv.logit()
 
-predict(m1, nd) |> inv.logit()
-predict(m2, nd) |> inv.logit()
-
-# We now have many groups with 0 or very few observations. If we would include a second covariate, e.g. stand, the situations becomes even worse.
-
-# So its a good idea, to use a GLM, where transformation is built into the model
-
+# We now have many groups with 0 or very few observations. If we would include a 
+# second covariate, e.g. stand, the situations becomes even worse.
 ```
-
-@Johannes, würdest du Logits per Hand rechnen lassen und dann in lm? Um in der Logik von dem Lane Paper zu beleiben?
 
 __Task 3:__ Modeling a disease probability model 
 
@@ -241,16 +301,16 @@ __Task 3:__ Modeling a disease probability model
 - Create a multiple GLM over age and self-chosen promising covariates, save separate to the simple GLM
 
 ```{r}
-ForestHealth %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
+fh %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
   geom_smooth(method = "glm", method.args = list(family = binomial(link = "logit")))
 
-glm_simple <- ForestHealth %>% glm(diseased ~ age, data = ., family = binomial(link = "logit"))
+glm_simple <- fh %>% glm(diseased ~ age, data = ., family = binomial(link = "logit"))
 summary(glm_simple)
-glm_multiple <- ForestHealth %>% select(age, elevation, soil, ph, fertilized, diseased) %>% 
+glm_multiple <- fh %>% select(age, elevation, soil, ph, fertilized, diseased) %>% 
   glm(diseased ~ ., data = .,  family = binomial(link = "logit"))
 summary(glm_multiple)
 
-ForestHealth %>% ggplot(aes(y = diseased, x = age, col = stand)) + geom_point() +
+fh %>% ggplot(aes(y = diseased, x = age, col = stand)) + geom_point() +
   geom_smooth(method = "glm", method.args = list(family = binomial(link = "logit")))
 
 ggeffects::ggeffect(glm_multiple, terms = c("age")) %>% plot()
@@ -270,21 +330,6 @@ Von uns vorgestelltes Summary gemeinsam erklären
 Odds multiplicative -> hard to interprete
 
 
-# Outlook: Multinomial regression
-
-Regression models that extend models for binary responses $y_i \in \{0, 1\}$ to the case of categorical responses $y_i=\{1, \dots, c+1\}$. In the example data `ForestHealth`, we have $y_i\in\{\text{no defoliation}, \text{weak defoliation}, \text{severe defoliation} \}$.
-
-## Unordered catagories
-
-In case of nominally scaled responses (no ordering), the logit model is extended with
-
-## Ordered categories
-
-Text und Code verfassen und nur vorstellen, keine Übungsaufgabe
-
-    - Forest health multinomial
-    - Forest health ordered
-    
 ## PhD examples
 
 - Henning
