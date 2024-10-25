@@ -153,7 +153,11 @@ The response function follows a Bernoulli distribution. However, grouping observ
 
 ## Developing a GLM by hand
 
-We want to develop the principle of the link function by a self-programmed data transformation. Let's start simple. We firstly calculate the mean disease probability in the data set without any covariates (even without `age`). Straightforward calculation is to calculate the ratio of successes (diseased trees) in relation to all trees as
+We want to develop the principle of the link function by a self-programmed data transformation. 
+
+### Global mean model
+
+Let's start simple. We firstly calculate the mean disease probability in the sample without any covariates (even without `age`). Straightforward calculation is to calculate the ratio of successes (diseased trees) in relation to all trees as
 
 ```{r}
 sum(fh$diseased) / nrow(fh)
@@ -166,20 +170,20 @@ mean(fh$diseased)
 # @Johannes, das kann weg oder? Das ist nicht anschlussfähig, da das später ja nicht mehr geht. Verwirrt nur?!
 ```
 
-Another option, which is seemingly so straightforward at the moment, is to calculate an intercept only logistic regression.
+Another option is to calculate an intercept only logistic regression. This option appears to be too complicated to the simple problem. We use it to underpin the how a GLM calculates the probabilities out of a sample. We come back to this.
 
 ```{r}
 # GLM
 glm_intercept_only <- glm(diseased ~ 1, family = binomial(), data = fh)
 ```
 
-Result (prediction) is the average disease probability. Additionally, we get the prediction of the link function. Generally, the GLM output provides predictions for the response, the original scale. In Lane (2002), this response was $y_o=\beta_0 \beta_1^{x_1}$. The link, respectively, provides estimations on the scale of the linear predictor (here, the logit, in Lane the log). Applying the inverse of the logit function `exp(x)/(1+exp(x))` to the prediction of the link thus, again, gives the response.
+Result (prediction) is the average disease probability. Additionally, we get the prediction of the link function. Generally, the GLM output provides predictions for the response, the original scale. Look at the Theoretical background, we have the result of the linear predictor $y_i$ (`link`) and for the response $\pi_i$. In Lane (2002), this response was $y_o=\beta_0 \beta_1^{x_1}$, the link $y_i=\beta_0+\beta_1\text{log(} x \text{)}$. The link, to conclude, provides estimations on the scale of the linear predictor (here, the logit, in Lane the log). Applying the inverse of the logit function `exp(x)/(1+exp(x))` to the prediction of the link thus, again, gives the response. The `GLM` output provides both estimates.
 
 ```{r}
 predict(glm_intercept_only, type = "response")[1]
 (x <- predict(glm_intercept_only, type = "link")[1])
 
-exp(x) / (1+exp(x))
+exp(x) / (1+exp(x)) # The response again
 ```
 
 Analogously to Lane (2002), we can also calculate the logits by hand (we transform the data). Still for the case of a simple population mean, we get
@@ -192,32 +196,33 @@ log(p / (1 - p))# logit(p)
 inv.logit(logit(p)) # short for exp(x) / (1+exp(x))
 ```
 
-Further developing the model, we now define groups of mixture type `stand` with differing disease probabilities:
+### Stand type (mixed / pure) model
+
+Further developing the model, we now define groups of mixture type `stand` with differing disease probabilities. We fit a model with one discrete variable only:
 
 ```{r}
 # Firstly, the GLM considering one categorical variable
 glm_stand <- glm(diseased ~ stand, family = binomial(), data = fh)
 summary(glm_stand)
 
-# Again, we fetch disease probabilities for the real scale (response) and
-# for the logit-transformed scale (link) 
+# Again, we fetch disease probabilities for the original scale (response) and
+# for the logit-transformed scale (link)
 
 nd <- data.frame(stand = c("deciduous", "mixed"))
 predict(glm_stand, nd, type = "response")
-predict(glm_stand, nd, type = "link")
-inv.logit(predict(glm_stand, nd, type = "link")) # gives the link
+(x <- predict(glm_stand, nd, type = "link"))
+inv.logit(x) # gives the response again
 
 # @Johannes: Weg oder?
-
 # A linear model does no longer work
 #m2 <- lm(diseased ~ stand, data = fh)
 #coef(m2)
 ```
 
-And now the promised data transformation:
+And now the promised linear model with data transformation, the GLM by hand:
 
 ```{r}
-# Do the logit transformation by hand ...
+# Do the logit transformation
 d1 <- data.frame(
   stand = c("mixed", "deciduous"), 
   logit = table(fh$stand, fh$diseased) |> 
@@ -225,19 +230,22 @@ d1 <- data.frame(
     logit()
 )
 d1
-
 # ... and then estimate an ordinary linear model.
-m3 <- lm(logit ~ stand, data = d1)
-coef(m3)
+glm_stand_by_hand <- lm(logit ~ stand, data = d1)
+coef(glm_stand_by_hand)
 
 # Backtransformation gives us the same group means as the GLM.
-inv.logit(coef(m3))
+inv.logit(coef(glm_stand_by_hand))
 ```
 
-Interim interpretation: Just as in logarithmic regression, logistic regression performs a "in-model" transformation. Doing data transformation to linearize the data leads (in this example) to the same results. Now let's derive the typical disease model, modelling the disease probability over age. We thus add a continuous variable `age`. Any observation can be 0 or 1 only, we thus cannot calculate $p$ for the observations. A problem that not yet occurred (not in Lane (2002), not in our simpler disease models). We need to define groups with at least 2 observations to get $p$. Best would be to have multiple observations for each age, which is, however, not likely for continuous variables. We thus need to define intervals of ages.
+Interim interpretation: Just as in logarithmic regression, logistic regression performs a "in-model" transformation. Doing data transformation to linearize the data leads (in this example) to the same results. Be aware that all models could also be calculated as simple group means.
+
+### Age model
+
+Now let's derive the typical disease model, modelling the disease probability over age to strengthen the advantages of GLM. We add the continuous variable `age`. As any observation can be 0 or 1 only, we cannot calculate $p$ for the single observations. A problem that not yet occurred (not in Lane (2002)/ never in log-linear regression, not in our simpler disease models). We need to group the original observations to create observations of $p$ for our model. Best would be to have multiple observations for each outcome of the continuous variable, which is, however, not likely for continuous variables. We thus need to define intervals of ages.
 
 ```{r}
-cut(fh$age, breaks = seq(20, 240, 20)) # 20-year-age-groups
+# cut(fh$age, breaks = seq(20, 240, 20)) # 20-year-age-groups @ Johannes, kann jetz auch weg oder?
 
 d <- fh |> mutate(g = age - (age %% 25)) |> 
   group_by(g) |> 
@@ -246,15 +254,17 @@ d <- fh |> mutate(g = age - (age %% 25)) |>
 
 head(d)
 
-self_tailored_glm_age <- lm(logit ~ age, data = d) # Fit a linear regression through the logits
-coef(self_tailored_glm_age)
+glm_age_by_hand <- lm(logit ~ age, data = d) # Fit a linear regression through the logits
+coef(glm_age_by_hand)
 ```
 
-The logit-transformed data is indeed linear (more or less) and the back-transformed regression function shows indeed an s-shaped curve that looks familiar.
+The logit-transformed data is indeed linear (more or less) and the back-transformed regression function shows indeed an s-shaped curve that looks familiar to survival modelers.
 
 ```{r}
-p1 <- d %>% ggplot(aes(y = logit, x = age)) + geom_point() + geom_abline(intercept = coef(self_tailored_glm_age)["(Intercept)"],
-                                                                   slope = coef(self_tailored_glm_age)["age"])
+p1 <- d %>% ggplot(aes(y = logit, x = age)) + geom_point() + 
+  geom_abline(intercept = coef(glm_age_by_hand)["(Intercept)"],
+              slope = coef(glm_age_by_hand)["age"])
+
 # @Johannes, da hab ich was falsch verstanden... 
 p2 <- d %>% ggplot(aes(y = inv.logit(logit), x = age)) + geom_point() + geom_function(fun = function (x) {exp(2.59795 + 0.01391 * x) / (1 + exp(2.59795 + 0.01391 * x))})
 
@@ -267,15 +277,15 @@ glm_age <- glm(diseased ~ age, data = fh, family = binomial(link = "logit"))
 coef(glm_age)
 
 nd <- data.frame(age = c(10, 50, 100))
-predict(self_tailored_glm_age, nd)
+predict(glm_age_by_hand, nd)
 predict(glm_age, nd)
 
-predict(self_tailored_glm_age, nd) |> inv.logit()
+predict(glm_age_by_hand, nd) |> inv.logit()
 predict(glm_age, nd) |> inv.logit()
 predict(glm_age, nd, type = "response")
 ```
 
-We can do better by increasing the number of classes. And this already gives the argument why to use `GLM` instead of diy. 
+We can do better by increasing the number of classes. And this already gives the argument why to use `GLM` instead of *do it by hand*.
 
 ```{r}
 d <- fh |> mutate(g = age - (age %% 2)) |> 
@@ -284,53 +294,53 @@ d <- fh |> mutate(g = age - (age %% 2)) |>
   mutate(age = g + 1) |> 
   filter(is.finite(logit))
 
-self_tailored_glm_age_2 <- lm(logit ~ age, data = d)
-coef(self_tailored_glm_age_2)
+glm_age_by_hand_2 <- lm(logit ~ age, data = d)
+coef(glm_age_by_hand_2)
 
-predict(self_tailored_glm_age_2, nd) |> inv.logit()
+predict(glm_age_by_hand_2, nd) |> inv.logit()
 predict(glm_age, nd) |> inv.logit()
-
-# We now have many groups with 0 or very few observations. If we would include a 
-# second covariate, e.g. stand, the situations becomes even worse.
 ```
 
-__Task 3:__ Modeling a disease probability model 
+We now have many groups with 0 or very few observations. If we would include a second covariate, e.g. stand, the situations becomes even worse.
 
-- Calculate Logits by hand ???
-- Create a univariate GLM over tree age
-- Create a multiple GLM over age and self-chosen promising covariates, save separate to the simple GLM
+## Multiple logistic regression
+
+GLM provides the ordinary procedures of hypotheses testing and statistical inference, similar to a linear model but different in the details. Let's fit a multiple model. The code is similar to `lm`. We here show basic principles of how a GLM can be interpreted and how its model quality can be assessed.
 
 ```{r}
-fh %>% ggplot(aes(y = diseased, x = age)) + geom_point() +
-  geom_smooth(method = "glm", method.args = list(family = binomial(link = "logit")))
-
-glm_simple <- fh %>% glm(diseased ~ age, data = ., family = binomial(link = "logit"))
-summary(glm_simple)
-glm_multiple <- fh %>% select(age, elevation, soil, ph, fertilized, diseased) %>% 
+glm_multiple <- fh %>% select(age, elevation, soil, ph, fertilized, diseased, stand) %>% 
   glm(diseased ~ ., data = .,  family = binomial(link = "logit"))
+```
+
+## Interpretation
+
+We now want to look at whether other covariates contribute more than age to the likelihood of disease. First, we can interpret the summary in the usual way. The p-values indicate the significance of the covariates. However, unlike ordinary linear models, the parameter cannot be interpreted directly. The summary gives the estimates of the linear predictor, the "link" scale.
+
+@Johannes: Odds multiplicative -> hard to interprete ??? Muss das noch was erklärt werden?
+
+```{r}
 summary(glm_multiple)
+```
 
-fh %>% ggplot(aes(y = diseased, x = age, col = stand)) + geom_point() +
-  geom_smooth(method = "glm", method.args = list(family = binomial(link = "logit")))
+The model suggests that altitude might has no effect on the model, whereas age, soil and fertilization fairly contribute to the model. Also, we can read the direction from the summary in which the covariates contribute to disease probability and we can derive rankings of the effects from the parameter estimates. Positive contribution: `fertilization` > `age`. Negative contribution: `ph` > `soil` > `elevation`. However, an interpretation in the sense of *if one covariate changes by one unit, how does that alter the response variable* is not possible with the data from the summary. Best practice is to look at the curvature of the regression model. `ggeffects` provides marginal effects plots, where one effect is displayed in isolation keeping the others fixed (economists may know this principles as *ceteris paribus*).
 
+```{r}
 ggeffects::ggeffect(glm_multiple, terms = c("age")) %>% plot()
 ggeffects::ggeffect(glm_multiple, terms = c("elevation")) %>% plot()
 ggeffects::ggeffect(glm_multiple, terms = c("soil")) %>% plot()
+ggeffects::ggeffect(glm_multiple, terms = c("age", "stand")) %>% plot()
 ```
 
 ## Model diagnostics
 
-Von uns vorgestelltes Summary gemeinsam erklären
+
 Kreuzvalidierung?
+AIC? LR?
 Overdispersion (quasibinomial, use more covariates)
 
-## Model interpretaion
-
-Von uns vorgestelltes Summary gemeinsam erklären
-Odds multiplicative -> hard to interprete
 
 
-## PhD examples
+# PhD examples
 
 - Henning
 - Valeska
