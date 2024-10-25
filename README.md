@@ -612,8 +612,7 @@ p1 <- d %>% ggplot(aes(y = logit, x = age)) + geom_point() +
   geom_abline(intercept = coef(glm_age_by_hand)["(Intercept)"],
               slope = coef(glm_age_by_hand)["age"])
 
-# @Johannes, da hab ich was falsch verstanden... 
-p2 <- d %>% ggplot(aes(y = inv.logit(logit), x = age)) + geom_point() + geom_function(fun = function (x) {exp(2.59795 + 0.01391 * x) / (1 + exp(2.59795 + 0.01391 * x))})
+p2 <- d %>% ggplot(aes(y = inv.logit(logit), x = age)) + geom_point() + geom_function(fun = function (x) {inv.logit(-2.59795 + 0.01391 * x)})
 
 p1 + p2
 ```
