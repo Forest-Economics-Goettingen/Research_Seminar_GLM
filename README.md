@@ -15,6 +15,7 @@ Kai & Johannes
     - [5.2.3 Age model](#523-age-model)
   - [5.3 Multiple logistic regression](#53-multiple-logistic-regression)
   - [5.4 Interpretation](#54-interpretation)
+    - [5.4.1 Using odds](#541-using-odds)
   - [5.5 Model diagnostics](#55-model-diagnostics)
 - [6 PhD examples](#6-phd-examples)
 - [7 Literature and Material](#7-literature-and-material)
@@ -57,6 +58,7 @@ library(boot)       # For logit() and inv.logit()
 # GLM itself is part of the stats package, which is loaded at start up
 library(ggeffects)  # Visual interpretation of statistical models
 library(emmeans)    # Testing linear hypotheses
+library(DHARMa)     # For model validation
 ```
 
 **Beforehand task 0:** Getting ready
@@ -547,7 +549,7 @@ coef(glm_stand_by_hand)
 ```
 
     ##   (Intercept)    standmixed 
-    ## -7.850462e-17 -1.061544e+00
+    ##  3.400754e-17 -1.061544e+00
 
 ``` r
 # Backtransformation gives us the same group means as the GLM.
@@ -720,9 +722,6 @@ However, unlike ordinary linear models, the parameter cannot be
 interpreted directly. The summary gives the estimates of the linear
 predictor, the “link” scale.
 
-@Johannes: Odds multiplicative -\> hard to interprete ??? Muss das noch
-was erklärt werden?
-
 ``` r
 summary(glm_multiple)
 ```
@@ -790,10 +789,102 @@ ggeffects::ggeffect(glm_multiple, terms = c("age", "stand")) %>% plot()
 
 ![](README_files/figure-gfm/unnamed-chunk-15-4.png)<!-- -->
 
+### 5.4.1 Using odds
+
+If you want to interprete the coefficients, the odds ratio can be used.
+The odds give the probability of an event occuring divided by the
+probability that this event does not occurs ($odds = p / (1 - p)$).
+Hence, if the odds are 1 its as likely that event will occur or will not
+occur ($0.5 / (1 - 0.5) = 1$). If we now take the ratio of two odds
+($OR$), we can say something about the coefficints of a logistic
+regression.
+
+Lets take `glm_multiple` as example:
+
+``` r
+summary(glm_multiple)
+```
+
+    ## 
+    ## Call:
+    ## glm(formula = diseased ~ ., family = binomial(link = "logit"), 
+    ##     data = .)
+    ## 
+    ## Coefficients:
+    ##                Estimate Std. Error z value Pr(>|z|)    
+    ## (Intercept)   1.035e-01  9.311e-01   0.111   0.9115    
+    ## age           1.938e-02  1.436e-03  13.493  < 2e-16 ***
+    ## elevation     5.722e-05  9.923e-04   0.058   0.9540    
+    ## soil         -3.100e-02  6.310e-03  -4.912 8.99e-07 ***
+    ## ph           -5.608e-01  1.832e-01  -3.062   0.0022 ** 
+    ## fertilizedno  5.208e-01  8.232e-02   6.327 2.50e-10 ***
+    ## standmixed   -2.616e-01  6.391e-02  -4.094 4.24e-05 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for binomial family taken to be 1)
+    ## 
+    ##     Null deviance: 2380.0  on 1792  degrees of freedom
+    ## Residual deviance: 1920.1  on 1786  degrees of freedom
+    ## AIC: 1934.1
+    ## 
+    ## Number of Fisher Scoring iterations: 4
+
+We could calculate the OR for age, i.e., how does the OR change if age
+increases by 1 unit (= 1 year). To see this, we will have to calculate
+the odds for year = 10 and year = 11 (or any pair of values that differ
+by 1 unit). All other covariates are held constant.
+
+``` r
+p1 <- inv.logit(c(1, 10, 0, 0, 0, 0, 0) %*% coef(glm_multiple))
+p2 <- inv.logit(c(1, 11, 0, 0, 0, 0, 0) %*% coef(glm_multiple))
+
+(p2 / (1 - p2)) / (p1 / (1 - p1))
+```
+
+    ##          [,1]
+    ## [1,] 1.019569
+
+This happens to be the `exp()` of the coefficient for age.
+
+``` r
+exp(coef(glm_multiple)[2])
+```
+
+    ##      age 
+    ## 1.019569
+
+There are few simple conclusions you can draw about any $\beta$:
+
+- If $\beta = 0$, the OR will be 1.
+
+- If $\beta < 0$, the OR will be \< 1 and vice versa.
+
+- A OR of 2 means that the effects doubles, a OR of $0.5$ means that the
+  effect is only half.
+
 ## 5.5 Model diagnostics
 
-Kreuzvalidierung? AIC? LR? Overdispersion (quasibinomial, use more
-covariates)
+The distribution of residuals for GLMs is not obvious any longer. A
+method that gained popularity recently is to simulate randomized
+quantile residuals from your model. The `DHARMa` package provides
+several functions to do exactly this. The easiest way is to plot the
+residuals and check if they match. We can compare the linear model,
+where the family is obviously wrong with a glm.
+
+``` r
+plot(simulateResiduals(lm_multiple_2))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+
+``` r
+plot(simulateResiduals(glm_multiple))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+
+This looks all good.
 
 # 6 PhD examples
 

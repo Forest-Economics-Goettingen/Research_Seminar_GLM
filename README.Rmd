@@ -34,6 +34,7 @@ library(boot)       # For logit() and inv.logit()
 # GLM itself is part of the stats package, which is loaded at start up
 library(ggeffects)  # Visual interpretation of statistical models
 library(emmeans)    # Testing linear hypotheses
+library(DHARMa)     # For model validation
 ```
 
 __Beforehand task 0:__ Getting ready
@@ -312,8 +313,6 @@ glm_multiple <- fh %>% select(age, elevation, soil, ph, fertilized, diseased, st
 
 We now want to look at whether other covariates contribute more than age to the likelihood of disease. First, we can interpret the summary in the usual way. The p-values indicate the significance of the covariates. However, unlike ordinary linear models, the parameter cannot be interpreted directly. The summary gives the estimates of the linear predictor, the "link" scale.
 
-@Johannes: Odds multiplicative -> hard to interprete ??? Muss das noch was erklärt werden?
-
 ```{r}
 summary(glm_multiple)
 ```
@@ -327,12 +326,56 @@ ggeffects::ggeffect(glm_multiple, terms = c("soil")) %>% plot()
 ggeffects::ggeffect(glm_multiple, terms = c("age", "stand")) %>% plot()
 ```
 
+
+### Using odds
+
+If you want to interprete the coefficients, the odds ratio can be used. The odds give the probability of an event occuring divided by the probability that this event does not occurs ($odds = p / (1 - p)$). Hence, if the odds are 1 its as likely that event will occur or will not occur ($0.5 / (1 - 0.5) = 1$). If we now take the ratio of two odds ($OR$), we can say something about the coefficints of a logistic regression.
+
+Lets take `glm_multiple` as example: 
+
+
+```{r}
+summary(glm_multiple)
+```
+
+We could calculate the OR for age, i.e., how does the OR change if age increases by 1 unit (= 1 year). To see this, we will have to calculate the odds for year = 10 and year = 11 (or any pair of values that differ by 1 unit). All other covariates are held constant. 
+
+```{r}
+p1 <- inv.logit(c(1, 10, 0, 0, 0, 0, 0) %*% coef(glm_multiple))
+p2 <- inv.logit(c(1, 11, 0, 0, 0, 0, 0) %*% coef(glm_multiple))
+
+(p2 / (1 - p2)) / (p1 / (1 - p1))
+```
+
+This happens to be the `exp()` of the coefficient for age. 
+
+```{r}
+exp(coef(glm_multiple)[2])
+```
+
+There are few simple conclusions you can draw about any $\beta$:
+
+- If $\beta = 0$, the OR will be 1. 
+- If $\beta < 0$, the OR will be < 1 and vice versa. 
+
+- A OR of 2 means that the effects doubles, a OR of $0.5$ means that the effect is only half. 
+
+
+
 ## Model diagnostics
 
+The distribution of residuals for GLMs is not obvious any longer. A method that gained popularity recently is to simulate randomized quantile residuals from your model. The `DHARMa` package provides several functions to do exactly this. The easiest way is to plot the residuals and check if they match. We can compare the linear model, where the family is obviously wrong with a glm. 
 
-Kreuzvalidierung?
-AIC? LR?
-Overdispersion (quasibinomial, use more covariates)
+```{r}
+plot(simulateResiduals(lm_multiple_2))
+```
+
+
+```{r}
+plot(simulateResiduals(glm_multiple))
+```
+
+This looks all good. 
 
 
 
