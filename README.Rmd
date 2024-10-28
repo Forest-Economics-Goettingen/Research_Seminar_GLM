@@ -29,6 +29,8 @@ We are using the following libraries:
 ```{r, message=FALSE}
 library(tidyverse)  # Data science
 library(ggplot2)    # Visualization
+library(ggpubr)     # Multiple plots
+library(patchwork)  # Multiple plots alternative 
 library(boot)       # For logit() and inv.logit()
 
 # GLM itself is part of the stats package, which is loaded at start up
@@ -96,9 +98,7 @@ summary(lm_multiple_2)
 p1 <- ggeffects::ggeffect(lm_multiple_2, terms = "age") %>% plot()
 p2 <- ggeffects::ggeffect(lm_multiple_2, terms = "ph") %>% plot()
 
-library(patchwork)
-
-p1 + p2
+ggpubr::ggarrange(plotlist = list(p1, p2), ncol = 2)
 ```
 
 
@@ -245,6 +245,7 @@ Interim interpretation: Just as in logarithmic regression, logistic regression p
 Now let's derive the typical disease model, modelling the disease probability over age to strengthen the advantages of GLM. We add the continuous variable `age`. As any observation can be 0 or 1 only, we cannot calculate $p$ for the single observations. A problem that not yet occurred (not in Lane (2002)/ never in log-linear regression, not in our simpler disease models). We need to group the original observations to create observations of $p$ for our model. Best would be to have multiple observations for each outcome of the continuous variable, which is, however, not likely for continuous variables. We thus need to define intervals of ages.
 
 ```{r}
+?`%%`
 d <- fh |> mutate(g = age - (age %% 25)) |> 
   group_by(g) |> 
   summarize(logit = logit(mean(diseased))) |> # Calc. logits for groups
@@ -265,7 +266,8 @@ p1 <- d %>% ggplot(aes(y = logit, x = age)) + geom_point() +
 
 p2 <- d %>% ggplot(aes(y = inv.logit(logit), x = age)) + geom_point() + geom_function(fun = function (x) {inv.logit(coef(glm_age_by_hand)["(Intercept)"] + coef(glm_age_by_hand)["age"] * x)})
 
-p1 + p2
+# p1 + p2 # Altervative patchwork
+ggpubr::ggarrange(plotlist = list(p1, p2), ncol = 2)
 ```
 
 

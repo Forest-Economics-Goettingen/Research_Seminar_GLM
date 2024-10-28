@@ -53,6 +53,8 @@ We are using the following libraries:
 ``` r
 library(tidyverse)  # Data science
 library(ggplot2)    # Visualization
+library(ggpubr)     # Multiple plots
+library(patchwork)  # Multiple plots
 library(boot)       # For logit() and inv.logit()
 
 # GLM itself is part of the stats package, which is loaded at start up
@@ -274,9 +276,7 @@ summary(lm_multiple_2)
 p1 <- ggeffects::ggeffect(lm_multiple_2, terms = "age") %>% plot()
 p2 <- ggeffects::ggeffect(lm_multiple_2, terms = "ph") %>% plot()
 
-library(patchwork)
-
-p1 + p2
+ggpubr::ggarrange(plotlist = list(p1, p2), ncol = 2)
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-2-3.png)<!-- -->
@@ -549,7 +549,7 @@ coef(glm_stand_by_hand)
 ```
 
     ##   (Intercept)    standmixed 
-    ##  3.400754e-17 -1.061544e+00
+    ## -7.850462e-17 -1.061544e+00
 
 ``` r
 # Backtransformation gives us the same group means as the GLM.
@@ -616,7 +616,8 @@ p1 <- d %>% ggplot(aes(y = logit, x = age)) + geom_point() +
 
 p2 <- d %>% ggplot(aes(y = inv.logit(logit), x = age)) + geom_point() + geom_function(fun = function (x) {inv.logit(coef(glm_age_by_hand)["(Intercept)"] + coef(glm_age_by_hand)["age"] * x)})
 
-p1 + p2
+# p1 + p2 # Altervative patchwork
+ggpubr::ggarrange(plotlist = list(p1, p2), ncol = 2)
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
