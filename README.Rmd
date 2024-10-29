@@ -245,7 +245,6 @@ Interim interpretation: Just as in logarithmic regression, logistic regression p
 Now let's derive the typical disease model, modelling the disease probability over age to strengthen the advantages of GLM. We add the continuous variable `age`. As any observation can be 0 or 1 only, we cannot calculate $p$ for the single observations. A problem that not yet occurred (not in Lane (2002)/ never in log-linear regression, not in our simpler disease models). We need to group the original observations to create observations of $p$ for our model. Best would be to have multiple observations for each outcome of the continuous variable, which is, however, not likely for continuous variables. We thus need to define intervals of ages.
 
 ```{r}
-?`%%`
 d <- fh |> mutate(g = age - (age %% 25)) |> 
   group_by(g) |> 
   summarize(logit = logit(mean(diseased))) |> # Calc. logits for groups
